@@ -1,0 +1,2 @@
+# ShibaSlame
+The meme coin
