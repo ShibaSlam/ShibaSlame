@@ -6,191 +6,245 @@
     <title>ShibaSlam</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden; /* предотвращаем прокрутку из-за падающих монет */
             margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            overflow: hidden;
             position: relative;
-            background-image: url('https://images.unsplash.com/photo-1593642632820-0e5a7a4e67b4');
-            background-size: cover; /* фоновое изображение */
         }
-        #game {
+
+        .section {
+            display: none;
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 300px;
-            z-index: 2; /* Делаем контейнер игры выше монет */
-            position: relative; /* Установим относительное позиционирование для кнопок */
+            padding: 100px 20px;
         }
+
+        .active {
+            display: block;
+        }
+
+        #main, #tasks, #frens {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
         #dog {
-            width: 200px; /* Увеличенная ширина собачки */
+            width: 200px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.3s;
         }
-        #dog:hover, #dog:active {
-            transform: scale(1.1);
+
+        /* Новая анимация при нажатии */
+        #dog:active {
+            animation: press 0.3s forwards;
         }
-        #tokens, #referralLink {
-            font-size: 24px;
+
+        @keyframes press {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        #tokens {
+            font-size: 32px;
             margin-top: 20px;
             font-weight: bold;
-        }
-        button {
-            margin: 10px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            width: 100%; /* Кнопки занимают всю ширину */
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        h1 {
             color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
         }
-        #linkDisplay {
-            display: none;
-            margin-top: 20px;
-            font-size: 20px;
-            color: #4CAF50;
+
+        .button {
+            margin: 20px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .claim-button {
+            background: linear-gradient(45deg, #FF9800, #FFB74D);
+        }
+
+        .claim-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.3);
+        }
+
         @keyframes fall {
             0% { top: -50px; }
             100% { top: 100vh; }
         }
+
         .coin {
             position: absolute;
-            top: -50px; /* Начальная позиция выше экрана */
-            width: 30px; /* Размер монеты */
-            height: auto; /* Автоматическая высота для сохранения пропорций */
-            animation: fall linear infinite; /* Анимация падения */
-            z-index: 1; /* Положение монет ниже контейнера игры */
+            top: -50px;
+            width: 50px;
+            z-index: 0;
+            animation: fall linear infinite;
+        }
+
+        /* Новый стиль нижнего навбара */
+        #navbar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #333;
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            z-index: 100;
+            border-radius: 25px 25px 0 0;
+        }
+
+        #navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 20px;
+            border-radius: 50px;
+            transition: background-color 0.3s, transform 0.2s;
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #navbar a:hover {
+            background-color: #555;
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body>
-    <div id="game">
+    <div id="navbar">
+        <a href="#main" onclick="switchSection('main')">Main</a>
+        <a href="#frens" onclick="switchSection('frens')">Frens</a>
+        <a href="#tasks" onclick="switchSection('tasks')">Tasks</a>
+    </div>
+
+    <!-- Main Section -->
+    <div id="main" class="section active">
         <h1>ShibaSlam</h1>
-        <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog"> <!-- Новое изображение собачки -->
+        <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog">
         <div id="tokens">Tokens: 0</div>
+        <button class="button" onclick="showReferralLink()">Your referral link</button>
         <div id="linkDisplay"></div>
-        <button onclick="showReferralLink()">Your referral link</button>
-        <button id="youtubeBtn" onclick="completeTask('youtube')">Subscribe to YouTube (1M Tokens)</button>
-        <button id="telegramBtn" onclick="completeTask('telegram')">Join Telegram (1.1M Tokens)</button>
-        <button id="claimReferralReward" onclick="claimReferralReward()">Claim Referral Reward</button>
+    </div>
+
+    <!-- Frens Section -->
+    <div id="frens" class="section">
+        <h1>Frens</h1>
+        <p>Invite friends and earn rewards!</p>
+    </div>
+
+    <!-- Tasks Section -->
+    <div id="tasks" class="section">
+        <h1>Tasks</h1>
+        <div class="task" id="clickTask">
+            Complete 10 clicks on the dog!
+            <br>Reward: 100K Tokens
+            <button class="button claim-button" onclick="claimReward('click')">Claim Reward</button>
+        </div>
+        <div class="task" id="referTask">
+            Refer a friend to join ShibaSlam!
+            <br>Reward: 200K Tokens
+            <button class="button claim-button" onclick="claimReward('refer')">Claim Reward</button>
+        </div>
+        <div class="task" id="telegramTask">
+            Join the Telegram channel!
+            <br>Reward: 1.1M Tokens
+            <button class="button claim-button" onclick="claimReward('telegram')">Claim Reward</button>
+        </div>
     </div>
 
     <script>
         let tokens = parseInt(localStorage.getItem('tokens')) || 0;
-        let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true';
-        let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true';
+        let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
 
-        // Generate or retrieve referral link
-        let referralCode = localStorage.getItem('referralCode') || generateReferralCode();
-        localStorage.setItem('referralCode', referralCode);
-
-        // Track if user has claimed the referral reward
-        let referralClaimed = localStorage.getItem('referralClaimed') === 'true';
-
-        // Создаем анимацию падающих монет
         function createCoin() {
             const coin = document.createElement('img');
-            coin.src = 'https://i.ibb.co/9nN1Shn/IMG-4255.png'; // Изображение монеты
+            coin.src = 'https://i.ibb.co/9nN1Shn/IMG-4255.png';
             coin.className = 'coin';
-            coin.style.left = Math.random() * 100 + 'vw'; // Случайная позиция по горизонтали
-            coin.style.animationDuration = (Math.random() * 3 + 2) + 's'; // Случайная продолжительность падения
+            coin.style.left = Math.random() * 100 + 'vw';
+            coin.style.animationDuration = (Math.random() * 2 + 3) + 's';
             document.body.appendChild(coin);
-            
-            // Удаляем монету после падения
-            coin.addEventListener('animationend', () => {
-                coin.remove();
-            });
+            coin.addEventListener('animationend', () => coin.remove());
         }
 
-        // Создаем падающие монеты каждые 500 мс
         setInterval(createCoin, 500);
 
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
         document.getElementById('dog').onclick = function() {
+            dogClicks++;
             tokens++;
             updateTokensDisplay();
-            // Анимация при нажатии на собаку
-            this.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 200);
+            checkTasks();
         };
 
         function showReferralLink() {
             const linkDisplay = document.getElementById('linkDisplay');
-            linkDisplay.innerHTML = `Your referral link: <a href="https://t.me/ShibaSlambot?ref=${referralCode}" target="_blank">https://t.me/ShibaSlambot?ref=${referralCode}</a>`;
+            linkDisplay.innerHTML = `Your referral link: <a href="https://t.me/ShibaSlambot?ref=REFCODE" target="_blank">https://t.me/ShibaSlambot?ref=REFCODE</a>`;
             linkDisplay.style.display = 'block';
-
-            // Automatically hide the link after 5 seconds
-            setTimeout(() => {
-                linkDisplay.style.display = 'none';
-            }, 5000);
+            setTimeout(() => linkDisplay.style.display = 'none', 5000);
         }
 
-        function completeTask(task) {
-            if (task === 'youtube' && !youtubeCompleted) {
-                youtubeCompleted = true;
-                tokens += 1000000;
-                alert("You have subscribed to YouTube! 1M Tokens awarded.");
-                window.open('https://www.youtube.com/@ShibaSlam', '_blank');
-                localStorage.setItem('youtubeCompleted', 'true');
-            } else if (task === 'telegram' && !telegramCompleted) {
-                telegramCompleted = true;
+        function claimReward(task) {
+            if (task === 'click' && dogClicks >= 10) {
+                tokens += 100000;
+                document.getElementById('clickTask').remove(); // Удаляем задание после выполнения
+            } else if (task === 'refer') {
+                tokens += 200000;
+                document.getElementById('referTask').remove(); // Удаляем задание после выполнения
+            } else if (task === 'telegram') {
                 tokens += 1100000;
-                alert("You have joined the Telegram channel! 1.1M Tokens awarded.");
-                window.open('https://t.me/ShibaSlam', '_blank');
-                localStorage.setItem('telegramCompleted', 'true');
+                document.getElementById('telegramTask').remove(); // Удаляем задание после выполнения
             } else {
-                alert("You have already completed this task!");
+                alert("Complete the task to claim the reward!");
+                return;
             }
             updateTokensDisplay();
-        }
-
-        function claimReferralReward() {
-            if (!referralClaimed) {
-                // Check if the user has joined through the referral link
-                const urlParams = new URLSearchParams(window.location.search);
-                const refCode = urlParams.get('ref');
-
-                if (refCode && refCode === referralCode) {
-                    tokens += 50000; // Reward for using a referral link
-                    alert("Referral reward claimed! 50K Tokens awarded.");
-                    referralClaimed = true;
-                    localStorage.setItem('referralClaimed', 'true');
-                } else {
-                    alert("No referral found or you are not eligible for this reward.");
-                }
-            } else {
-                alert("You have already claimed your referral reward!");
-            }
-            updateTokensDisplay();
+            dogClicks = 0; // Сбрасываем счётчик нажатий после выполнения задания
         }
 
         function updateTokensDisplay() {
-            localStorage.setItem('tokens', tokens);
             document.getElementById('tokens').innerText = "Tokens: " + tokens;
+            localStorage.setItem('tokens', tokens);
+            localStorage.setItem('dogClicks', dogClicks);
         }
 
-        function generateReferralCode() {
-            return 'REF' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        function checkTasks() {
+            if (dogClicks >= 10) {
+                document.getElementById('clickTask').querySelector('.claim-button').disabled = false;
+            }
         }
 
         updateTokensDisplay();
+        checkTasks();
     </script>
 </body>
 </html>
