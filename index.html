@@ -23,7 +23,7 @@
             display: block;
         }
 
-        #main, #tasks, #frens {
+        #main, #tasks, #frens, #stats {
             background: rgba(255, 255, 255, 0.8);
             border-radius: 15px;
             margin: 20px auto;
@@ -36,7 +36,7 @@
         }
 
         #dog {
-            width: 300px; /* Увеличена кнопка собачки */
+            width: 250px;
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -57,7 +57,7 @@
             }
         }
 
-        #tokens {
+        #tokens, #level {
             font-size: 32px;
             margin-top: 20px;
             font-weight: bold;
@@ -99,7 +99,7 @@
         .coin {
             position: absolute;
             top: -50px;
-            width: 70px; /* Увеличен размер монетки */
+            width: 50px;
             z-index: 0;
             animation: fall linear infinite;
         }
@@ -132,6 +132,19 @@
             background-color: #555;
             transform: scale(1.1);
         }
+
+        @media (max-width: 600px) {
+            #dog {
+                width: 200px;
+            }
+            .button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            #navbar a {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,12 +152,14 @@
         <a href="#main" onclick="switchSection('main')">Main</a>
         <a href="#frens" onclick="switchSection('frens')">Frens</a>
         <a href="#tasks" onclick="switchSection('tasks')">Tasks</a>
+        <a href="#stats" onclick="switchSection('stats')">Stats</a>
     </div>
 
     <div id="main" class="section active">
         <h1>ShibaSlam</h1>
         <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog">
         <div id="tokens">Tokens: 0</div>
+        <div id="level">Level: 1</div>
         <button class="button" onclick="showReferralLink()">Your referral link</button>
         <div id="linkDisplay"></div>
     </div>
@@ -152,51 +167,49 @@
     <div id="frens" class="section">
         <h1>Frens</h1>
         <p>Invite friends and earn rewards!</p>
+        <p>Bonus for inviting: 50K Tokens for regular players and 100K Tokens for premium players.</p>
         <div id="referralSection">
             <p>Your unique referral link:</p>
             <div id="referralLinkDisplay"></div>
             <button class="button" onclick="copyReferralLink()">Copy</button>
         </div>
-        <p>Bonuses:</p>
-        <ul>
-            <li>50K Tokens for regular players.</li>
-            <li>100K Tokens for premium players (Telegram Premium).</li>
-        </ul>
     </div>
 
     <div id="tasks" class="section">
         <h1>Tasks</h1>
-        <!-- Задания с информацией о наградах -->
+        <div class="task" id="clickTask">
+            Complete 10 clicks on the dog!
+            <br>Reward: 100K Tokens
+            <button class="button claim-button" id="clickTaskButton" onclick="claimReward('click')">Claim Reward</button>
+        </div>
+        <div class="task" id="referTask">
+            Refer a friend to join ShibaSlam!
+            <br>Reward: 200K Tokens
+            <button class="button claim-button" id="referTaskButton" onclick="claimReward('refer')">Claim Reward</button>
+        </div>
+        <div class="task" id="telegramTask">
+            Join the Telegram channel!
+            <br>Reward: 1.1M Tokens
+            <button class="button claim-button" id="telegramTaskButton" onclick="claimReward('telegram')">Claim Reward</button>
+        </div>
+    </div>
+
+    <div id="stats" class="section">
+        <h1>Top 100 Players</h1>
+        <div id="topPlayers"></div>
     </div>
 
     <script>
         let tokens = parseInt(localStorage.getItem('tokens')) || 0;
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
+        let level = parseInt(localStorage.getItem('level')) || 1;
         const userId = localStorage.getItem('userId') || generateUserId();
-        const referralLinkBase = `https://example.com/referral?userId=${userId}`; // Замените на ваш URL
+        const referralLinkBase = `https://t.me/ShibaSlambot?ref=`;
 
         function generateUserId() {
             const id = Math.random().toString(36).substr(2, 9);
             localStorage.setItem('userId', id);
             return id;
-        }
-
-        function showReferralLink() {
-            const linkDisplay = document.getElementById('linkDisplay');
-            linkDisplay.textContent = referralLinkBase;
-        }
-
-        function copyReferralLink() {
-            navigator.clipboard.writeText(referralLinkBase).then(() => {
-                alert("Referral link copied to clipboard!");
-            });
-        }
-
-        function switchSection(section) {
-            document.querySelectorAll('.section').forEach(sec => {
-                sec.classList.remove('active');
-            });
-            document.getElementById(section).classList.add('active');
         }
 
         function createCoin() {
@@ -211,19 +224,92 @@
 
         setInterval(createCoin, 500);
 
-        // Обработчик клика по собачке
-        document.getElementById('dog').addEventListener('click', () => {
-            tokens += 1;
-            dogClicks += 1;
-            localStorage.setItem('tokens', tokens);
-            localStorage.setItem('dogClicks', dogClicks);
-            document.getElementById('tokens').textContent = 'Tokens: ' + tokens;
-        });
-
-        // Запуск анимации падающих монеток
-        for (let i = 0; i < 10; i++) {
-            createCoin();
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (sectionId === 'frens') {
+                document.getElementById('referralLinkDisplay').innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
+            }
+            checkTasks(); // Проверяем выполнение заданий при переключении секции
+            updateTopPlayers(); // Обновляем топ игроков при переключении
         }
+
+        document.getElementById('dog').onclick = function
+
+() {
+            dogClicks++;
+            tokens += 1;
+            localStorage.setItem('dogClicks', dogClicks);
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            document.getElementById('level').innerText = `Level: ${level}`;
+            checkLevelUp();
+        };
+
+        function checkLevelUp() {
+            if (dogClicks >= 10000 && level === 1) {
+                level = 2;
+                alert("Congratulations! You've reached Level 2!");
+            } else if (dogClicks >= 20000 && level === 2) {
+                level = 3;
+                alert("Congratulations! You've reached Level 3!");
+            }
+            localStorage.setItem('level', level);
+        }
+
+        function showReferralLink() {
+            const link = `Your referral link: ${referralLinkBase}${userId}`;
+            document.getElementById('linkDisplay').innerText = link;
+        }
+
+        function copyReferralLink() {
+            const copyText = `${referralLinkBase}${userId}`;
+            navigator.clipboard.writeText(copyText).then(() => {
+                alert("Referral link copied!");
+            });
+        }
+
+        function claimReward(taskType) {
+            let reward = 0;
+            if (taskType === 'click' && !localStorage.getItem('clickTaskCompleted')) {
+                reward = 100000; // 100K Tokens for clicking task
+                localStorage.setItem('clickTaskCompleted', true);
+                alert("You have claimed your reward of 100K Tokens!");
+            } else if (taskType === 'refer' && !localStorage.getItem('referTaskCompleted')) {
+                reward = 200000; // 200K Tokens for referral task
+                localStorage.setItem('referTaskCompleted', true);
+                alert("You have claimed your reward of 200K Tokens!");
+            } else if (taskType === 'telegram' && !localStorage.getItem('telegramTaskCompleted')) {
+                reward = 1100000; // 1.1M Tokens for Telegram task
+                localStorage.setItem('telegramTaskCompleted', true);
+                alert("You have claimed your reward of 1.1M Tokens!");
+            } else {
+                alert("You have already claimed this reward.");
+                return;
+            }
+            tokens += reward;
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        }
+
+        function updateTopPlayers() {
+            const topPlayers = JSON.parse(localStorage.getItem('topPlayers')) || [];
+            topPlayers.push({ userId, tokens });
+            topPlayers.sort((a, b) => b.tokens - a.tokens);
+            topPlayers.splice(100); // Keep only top 100 players
+            localStorage.setItem('topPlayers', JSON.stringify(topPlayers));
+            displayTopPlayers(topPlayers);
+        }
+
+        function displayTopPlayers(players) {
+            const playerList = players.map((player, index) => `<div>${index + 1}. Player ID: ${player.userId} - Tokens: ${player.tokens}</div>`).join('');
+            document.getElementById('topPlayers').innerHTML = playerList;
+        }
+
+        checkTasks();
+        document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        document.getElementById('level').innerText = `Level: ${level}`;
+        updateTopPlayers();
     </script>
 </body>
 </html>
