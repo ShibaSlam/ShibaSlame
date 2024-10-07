@@ -10,16 +10,14 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('https://images.unsplash.com/photo-1593642632820-0e5a7a4e67b4'); /* Фоновое изображение */
+            background-image: url('https://images.unsplash.com/photo-1593642632820-0e5a7a4e67b4');
             background-size: cover;
             font-family: 'Arial', sans-serif;
             margin: 0;
-            overflow: hidden; /* Запретить прокрутку страницы */
-            touch-action: manipulation; /* Убирает масштабирование на iPhone */
         }
         #game {
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 30px;
@@ -30,17 +28,10 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        #dog:active {
-            transform: scale(0.9); /* Анимация при нажатии */
+        #dog:hover, #dog:active {
+            transform: scale(1.1);
         }
-        @keyframes shake {
-            0% { transform: translate(0); }
-            25% { transform: translate(-2px, 0); }
-            50% { transform: translate(2px, 0); }
-            75% { transform: translate(-2px, 0); }
-            100% { transform: translate(0); }
-        }
-        #tokens {
+        #tokens, #referralLink {
             font-size: 24px;
             margin-top: 20px;
             font-weight: bold;
@@ -64,72 +55,101 @@
             font-size: 28px;
             margin-bottom: 20px;
         }
-        #referralLink {
-            margin-top: 10px;
-            display: none; /* Скрыть изначально */
+        #linkDisplay {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
     <div id="game">
         <h1>ShibaSlam</h1>
-        <img id="dog" src="https://i.ibb.co/vCWXvv3/IMG-4228.webp" alt="Shiba Dog"> <!-- Обновлено изображение собачки -->
+        <img id="dog" src="https://i.ibb.co/vCWXvv3/IMG-4228.webp" alt="Shiba Dog">
         <div id="tokens">Tokens: 0</div>
+        <button onclick="showReferralLink()">Your referral link</button>
+        <div id="linkDisplay"></div>
         <button id="youtubeBtn" onclick="completeTask('youtube')">Subscribe to YouTube (1M Tokens)</button>
         <button id="telegramBtn" onclick="completeTask('telegram')">Join Telegram (1.1M Tokens)</button>
-
-        <!-- New referral button -->
-        <button id="referralButton" onclick="showReferralLink()">Get Referral Link</button>
-        <p id="referralLink"></p> <!-- Место для отображения реферальной ссылки -->
+        <button id="claimReferralReward" onclick="claimReferralReward()">Claim Referral Reward</button>
     </div>
     <script>
-        let tokens = parseInt(localStorage.getItem('tokens')) || 0; // Загружаем токены из localStorage
-        let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true'; // Проверяем, завершено ли задание
-        let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true'; // Проверяем, завершено ли задание
+        let tokens = parseInt(localStorage.getItem('tokens')) || 0;
+        let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true';
+        let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true';
 
-        const dogElement = document.getElementById('dog');
+        // Generate or retrieve referral link
+        let referralCode = localStorage.getItem('referralCode') || generateReferralCode();
+        localStorage.setItem('referralCode', referralCode);
 
-        dogElement.onclick = function() {
+        // Track if user has claimed the referral reward
+        let referralClaimed = localStorage.getItem('referralClaimed') === 'true';
+
+        document.getElementById('dog').onclick = function() {
             tokens++;
             updateTokensDisplay();
-            dogElement.classList.add('shake'); // Добавляем класс для анимации
+        };
+
+        function showReferralLink() {
+            const linkDisplay = document.getElementById('linkDisplay');
+            linkDisplay.innerHTML = `Your referral link: <a href="https://t.me/ShibaSlambot?ref=${referralCode}" target="_blank">https://t.me/ShibaSlambot?ref=${referralCode}</a>`;
+            linkDisplay.style.display = 'block';
+
+            // Automatically hide the link after 5 seconds
             setTimeout(() => {
-                dogElement.classList.remove('shake'); // Удаляем класс после анимации
-            }, 200); // Время анимации
+                linkDisplay.style.display = 'none';
+            }, 5000);
         }
 
         function completeTask(task) {
             if (task === 'youtube' && !youtubeCompleted) {
-                youtubeCompleted = true; // Отмечаем, что задание завершено
-                tokens += 1000000; // Награда за подписку на YouTube
+                youtubeCompleted = true;
+                tokens += 1000000;
                 alert("You have subscribed to YouTube! 1M Tokens awarded.");
-                window.open('https://www.youtube.com/@ShibaSlam', '_blank'); // Открывает ссылку на YouTube
-                localStorage.setItem('youtubeCompleted', 'true'); // Сохраняем в localStorage
+                window.open('https://www.youtube.com/@ShibaSlam', '_blank');
+                localStorage.setItem('youtubeCompleted', 'true');
             } else if (task === 'telegram' && !telegramCompleted) {
-                telegramCompleted = true; // Отмечаем, что задание завершено
-                tokens += 1100000; // Награда за подписку на Telegram
+                telegramCompleted = true;
+                tokens += 1100000;
                 alert("You have joined the Telegram channel! 1.1M Tokens awarded.");
-                window.open('https://t.me/ShibaSlam', '_blank'); // Открывает ссылку на Telegram
-                localStorage.setItem('telegramCompleted', 'true'); // Сохраняем в localStorage
+                window.open('https://t.me/ShibaSlam', '_blank');
+                localStorage.setItem('telegramCompleted', 'true');
             } else {
                 alert("You have already completed this task!");
             }
             updateTokensDisplay();
         }
 
+        function claimReferralReward() {
+            if (!referralClaimed) {
+                // Check if the user has joined through the referral link
+                const urlParams = new URLSearchParams(window.location.search);
+                const refCode = urlParams.get('ref');
+
+                if (refCode && refCode === referralCode) {
+                    tokens += 50000; // Reward for using a referral link
+                    alert("Referral reward claimed! 50K Tokens awarded.");
+                    referralClaimed = true;
+                    localStorage.setItem('referralClaimed', 'true');
+                } else {
+                    alert("No referral found or you are not eligible for this reward.");
+                }
+            } else {
+                alert("You have already claimed your referral reward!");
+            }
+            updateTokensDisplay();
+        }
+
         function updateTokensDisplay() {
-            localStorage.setItem('tokens', tokens); // Сохраняем токены в localStorage
+            localStorage.setItem('tokens', tokens);
             document.getElementById('tokens').innerText = "Tokens: " + tokens;
         }
 
-        function showReferralLink() {
-            const referralLink = "https://shibaslam.github.io/ShibaSlame/register?ref=ABC123"; // Ваша реферальная ссылка
-            const referralElement = document.getElementById('referralLink');
-            referralElement.innerText = "Your referral link: " + referralLink; // Отображаем ссылку
-            referralElement.style.display = "block"; // Показываем ссылку
+        function generateReferralCode() {
+            return 'REF' + Math.random().toString(36).substr(2, 9).toUpperCase();
         }
 
-        // Отображаем начальное количество токенов
         updateTokensDisplay();
     </script>
 </body>
