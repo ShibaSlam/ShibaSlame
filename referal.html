@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShibaSlam Referral System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50; /* Green button color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+        p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to ShibaSlam!</h1>
+    <button id="referralButton">Get Referral Link</button>
+    <p id="referralLink" style="display:none;"></p>
+    <p id="rewards" style="display:none;"></p>
+
+    <script>
+        // Example user data
+        const userReferralCode = "ABC123";  // User's referral code
+        const isUserPremium = false;  // Indicates if the user is premium
+        const invitedUserIsPremium = true;  // Indicates if the invited user is premium
+
+        document.getElementById("referralButton").addEventListener("click", function() {
+            // Generate referral link
+            const referralUrl = `https://yourgame.com/register?ref=${userReferralCode}`;
+            document.getElementById("referralLink").innerText = `Your referral link: ${referralUrl}`;
+            document.getElementById("referralLink").style.display = "block"; // Show the link
+
+            // Reward logic
+            const referrerReward = isUserPremium ? 100000 : 50000;  // Referrer reward
+            const invitedReward = invitedUserIsPremium ? 100000 : 50000;  // Invited user reward
+
+            document.getElementById("rewards").innerText = 
+                `Rewards: Referrer gets ${referrerReward} sbimaslams, ` +
+                `invited user gets ${invitedReward} sbimaslams.`;
+            document.getElementById("rewards").style.display = "block"; // Show rewards
+        });
+    </script>
+</body>
+</html>
