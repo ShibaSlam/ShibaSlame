@@ -6,7 +6,7 @@
     <title>Реферальная система</title>
 </head>
 <body>
-    <h1>Добро пожаловать в ShibaSlam!</h1>
+    <h1>Welcome to ShibaSlam!</h1>
     <button id="referralButton">Получить реферальную ссылку</button>
     <p id="referralLink" style="display:none;"></p>
     <p id="rewards" style="display:none;"></p>
@@ -18,7 +18,7 @@
         const invitedUserIsPremium = true;  // Признак, является ли приглашенный пользователь премиум
 
         document.getElementById("referralButton").addEventListener("click", function() {
-            const referralUrl = `https://yourgame.com/register?ref=${userReferralCode}`;
+            const referralUrl = `https://ShibaSlame.com/register?ref=${userReferralCode}`;
             document.getElementById("referralLink").innerText = `Ваша реферальная ссылка: ${referralUrl}`;
             document.getElementById("referralLink").style.display = "block"; // Показать ссылку
 
