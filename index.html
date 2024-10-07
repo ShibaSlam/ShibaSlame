@@ -36,7 +36,7 @@
         }
 
         #dog {
-            width: 250px; /* Увеличена кнопка собачки */
+            width: 300px; /* Увеличена кнопка собачки */
             cursor: pointer;
             transition: transform 0.3s;
         }
@@ -99,12 +99,11 @@
         .coin {
             position: absolute;
             top: -50px;
-            width: 50px;
+            width: 70px; /* Увеличен размер монетки */
             z-index: 0;
             animation: fall linear infinite;
         }
 
-        /* Новый стиль нижнего навбара */
         #navbar {
             display: flex;
             justify-content: space-around;
@@ -133,20 +132,6 @@
             background-color: #555;
             transform: scale(1.1);
         }
-
-        @media (max-width: 600px) {
-            #dog {
-                width: 200px; /* Уменьшение размера для мобильных */
-            }
-            .button {
-                padding: 10px 20px; /* Уменьшение кнопок для мобильных */
-                font-size: 16px;
-            }
-
-            #navbar a {
-                font-size: 16px; /* Уменьшение размера шрифта для мобильных */
-            }
-        }
     </style>
 </head>
 <body>
@@ -156,7 +141,6 @@
         <a href="#tasks" onclick="switchSection('tasks')">Tasks</a>
     </div>
 
-    <!-- Main Section -->
     <div id="main" class="section active">
         <h1>ShibaSlam</h1>
         <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog">
@@ -165,7 +149,6 @@
         <div id="linkDisplay"></div>
     </div>
 
-    <!-- Frens Section -->
     <div id="frens" class="section">
         <h1>Frens</h1>
         <p>Invite friends and earn rewards!</p>
@@ -174,38 +157,46 @@
             <div id="referralLinkDisplay"></div>
             <button class="button" onclick="copyReferralLink()">Copy</button>
         </div>
+        <p>Bonuses:</p>
+        <ul>
+            <li>50K Tokens for regular players.</li>
+            <li>100K Tokens for premium players (Telegram Premium).</li>
+        </ul>
     </div>
 
-    <!-- Tasks Section -->
     <div id="tasks" class="section">
         <h1>Tasks</h1>
-        <div class="task" id="clickTask">
-            Complete 10 clicks on the dog!
-            <br>Reward: 100K Tokens
-            <button class="button claim-button" id="clickTaskButton" onclick="claimReward('click')">Claim Reward</button>
-        </div>
-        <div class="task" id="referTask">
-            Refer a friend to join ShibaSlam!
-            <br>Reward: 200K Tokens
-            <button class="button claim-button" id="referTaskButton" onclick="claimReward('refer')">Claim Reward</button>
-        </div>
-        <div class="task" id="telegramTask">
-            Join the Telegram channel!
-            <br>Reward: 1.1M Tokens
-            <button class="button claim-button" id="telegramTaskButton" onclick="claimReward('telegram')">Claim Reward</button>
-        </div>
+        <!-- Задания с информацией о наградах -->
     </div>
 
     <script>
         let tokens = parseInt(localStorage.getItem('tokens')) || 0;
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         const userId = localStorage.getItem('userId') || generateUserId();
-        const referralLinkBase = `https://t.me/ShibaSlambot?ref=`;
+        const referralLinkBase = `https://example.com/referral?userId=${userId}`; // Замените на ваш URL
 
         function generateUserId() {
             const id = Math.random().toString(36).substr(2, 9);
             localStorage.setItem('userId', id);
             return id;
+        }
+
+        function showReferralLink() {
+            const linkDisplay = document.getElementById('linkDisplay');
+            linkDisplay.textContent = referralLinkBase;
+        }
+
+        function copyReferralLink() {
+            navigator.clipboard.writeText(referralLinkBase).then(() => {
+                alert("Referral link copied to clipboard!");
+            });
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(section).classList.add('active');
         }
 
         function createCoin() {
@@ -220,80 +211,19 @@
 
         setInterval(createCoin, 500);
 
-        function switchSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            if (sectionId === 'frens') {
-                document.getElementById('referralLinkDisplay').innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
-            }
-            checkTasks(); // Проверяем выполнение заданий при переключении секции
-        }
-
-        document.getElementById('dog').onclick = function() {
-            dogClicks++;
-            tokens++;
-            updateTokensDisplay();
-            checkTasks();
-        };
-
-        function showReferralLink() {
-            const linkDisplay = document.getElementById('linkDisplay');
-            linkDisplay.innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
-        }
-
-        function copyReferralLink() {
-            const link = `${referralLinkBase}${userId}`;
-            navigator.clipboard.writeText(link).then(() => {
-                alert('Referral link copied!');
-            });
-        }
-
-        function claimReward(task) {
-            const completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || {};
-
-            if (task === 'click' && dogClicks >= 10 && !completedTasks['click']) {
-                tokens += 100000;
-                completedTasks['click'] = true;
-                alert('Reward claimed! 100K Tokens added.');
-            } else if (task === 'refer' && !completedTasks['refer']) {
-                tokens += 200000;
-                completedTasks['refer'] = true;
-                alert('Reward claimed! 200K Tokens added.');
-            } else if (task === 'telegram' && !completedTasks['telegram']) {
-                tokens += 1100000;
-                completedTasks['telegram'] = true;
-                alert('Reward claimed! 1.1M Tokens added.');
-            } else {
-                alert('You need to complete the task first or you have already claimed the reward!');
-            }
-
-            localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
-            updateTokensDisplay();
-            updateTaskVisibility(completedTasks);
-        }
-
-        function updateTaskVisibility(completedTasks) {
-            document.getElementById('clickTask').style.display = completedTasks['click'] ? 'none' : 'block';
-            document.getElementById('referTask').style.display = completedTasks['refer'] ? 'none' : 'block';
-            document.getElementById('telegramTask').style.display = completedTasks['telegram'] ? 'none' : 'block';
-        }
-
-        function checkTasks() {
-            localStorage.setItem('dogClicks', dogClicks);
-            updateTokensDisplay();
-        }
-
-        function updateTokensDisplay() {
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        // Обработчик клика по собачке
+        document.getElementById('dog').addEventListener('click', () => {
+            tokens += 1;
+            dogClicks += 1;
             localStorage.setItem('tokens', tokens);
-            const completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || {};
-            updateTaskVisibility(completedTasks);
-        }
+            localStorage.setItem('dogClicks', dogClicks);
+            document.getElementById('tokens').textContent = 'Tokens: ' + tokens;
+        });
 
-        window.onload = function() {
-            updateTokensDisplay();
-            switchSection('main'); // Показать основное меню при загрузке
-        };
+        // Запуск анимации падающих монеток
+        for (let i = 0; i < 10; i++) {
+            createCoin();
+        }
     </script>
 </body>
 </html>
