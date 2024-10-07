@@ -36,12 +36,11 @@
         }
 
         #dog {
-            width: 200px;
+            width: 250px; /* Увеличена кнопка собачки */
             cursor: pointer;
             transition: transform 0.3s;
         }
 
-        /* Новая анимация при нажатии */
         #dog:active {
             animation: press 0.3s forwards;
         }
@@ -134,6 +133,20 @@
             background-color: #555;
             transform: scale(1.1);
         }
+
+        @media (max-width: 600px) {
+            #dog {
+                width: 200px; /* Уменьшение размера для мобильных */
+            }
+            .button {
+                padding: 10px 20px; /* Уменьшение кнопок для мобильных */
+                font-size: 16px;
+            }
+
+            #navbar a {
+                font-size: 16px; /* Уменьшение размера шрифта для мобильных */
+            }
+        }
     </style>
 </head>
 <body>
@@ -156,6 +169,11 @@
     <div id="frens" class="section">
         <h1>Frens</h1>
         <p>Invite friends and earn rewards!</p>
+        <div id="referralSection">
+            <p>Your unique referral link:</p>
+            <div id="referralLinkDisplay"></div>
+            <button class="button" onclick="copyReferralLink()">Copy</button>
+        </div>
     </div>
 
     <!-- Tasks Section -->
@@ -164,23 +182,31 @@
         <div class="task" id="clickTask">
             Complete 10 clicks on the dog!
             <br>Reward: 100K Tokens
-            <button class="button claim-button" onclick="claimReward('click')">Claim Reward</button>
+            <button class="button claim-button" id="clickTaskButton" onclick="claimReward('click')">Claim Reward</button>
         </div>
         <div class="task" id="referTask">
             Refer a friend to join ShibaSlam!
             <br>Reward: 200K Tokens
-            <button class="button claim-button" onclick="claimReward('refer')">Claim Reward</button>
+            <button class="button claim-button" id="referTaskButton" onclick="claimReward('refer')">Claim Reward</button>
         </div>
         <div class="task" id="telegramTask">
             Join the Telegram channel!
             <br>Reward: 1.1M Tokens
-            <button class="button claim-button" onclick="claimReward('telegram')">Claim Reward</button>
+            <button class="button claim-button" id="telegramTaskButton" onclick="claimReward('telegram')">Claim Reward</button>
         </div>
     </div>
 
     <script>
         let tokens = parseInt(localStorage.getItem('tokens')) || 0;
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
+        const userId = localStorage.getItem('userId') || generateUserId();
+        const referralLinkBase = `https://t.me/ShibaSlambot?ref=`;
+
+        function generateUserId() {
+            const id = Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('userId', id);
+            return id;
+        }
 
         function createCoin() {
             const coin = document.createElement('img');
@@ -197,6 +223,10 @@
         function switchSection(sectionId) {
             document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
+            if (sectionId === 'frens') {
+                document.getElementById('referralLinkDisplay').innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
+            }
+            checkTasks(); // Проверяем выполнение заданий при переключении секции
         }
 
         document.getElementById('dog').onclick = function() {
@@ -208,43 +238,62 @@
 
         function showReferralLink() {
             const linkDisplay = document.getElementById('linkDisplay');
-            linkDisplay.innerHTML = `Your referral link: <a href="https://t.me/ShibaSlambot?ref=REFCODE" target="_blank">https://t.me/ShibaSlambot?ref=REFCODE</a>`;
-            linkDisplay.style.display = 'block';
-            setTimeout(() => linkDisplay.style.display = 'none', 5000);
+            linkDisplay.innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
+        }
+
+        function copyReferralLink() {
+            const link = `${referralLinkBase}${userId}`;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Referral link copied!');
+            });
         }
 
         function claimReward(task) {
-            if (task === 'click' && dogClicks >= 10) {
+            const completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || {};
+
+            if (task === 'click' && dogClicks >= 10 && !completedTasks['click']) {
                 tokens += 100000;
-                document.getElementById('clickTask').remove(); // Удаляем задание после выполнения
-            } else if (task === 'refer') {
+                completedTasks['click'] = true;
+                alert('Reward claimed! 100K Tokens added.');
+            } else if (task === 'refer' && !completedTasks['refer']) {
                 tokens += 200000;
-                document.getElementById('referTask').remove(); // Удаляем задание после выполнения
-            } else if (task === 'telegram') {
+                completedTasks['refer'] = true;
+                alert('Reward claimed! 200K Tokens added.');
+            } else if (task === 'telegram' && !completedTasks['telegram']) {
                 tokens += 1100000;
-                document.getElementById('telegramTask').remove(); // Удаляем задание после выполнения
+                completedTasks['telegram'] = true;
+                alert('Reward claimed! 1.1M Tokens added.');
             } else {
-                alert("Complete the task to claim the reward!");
-                return;
+                alert('You need to complete the task first or you have already claimed the reward!');
             }
+
+            localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
             updateTokensDisplay();
-            dogClicks = 0; // Сбрасываем счётчик нажатий после выполнения задания
+            updateTaskVisibility(completedTasks);
         }
 
-        function updateTokensDisplay() {
-            document.getElementById('tokens').innerText = "Tokens: " + tokens;
-            localStorage.setItem('tokens', tokens);
-            localStorage.setItem('dogClicks', dogClicks);
+        function updateTaskVisibility(completedTasks) {
+            document.getElementById('clickTask').style.display = completedTasks['click'] ? 'none' : 'block';
+            document.getElementById('referTask').style.display = completedTasks['refer'] ? 'none' : 'block';
+            document.getElementById('telegramTask').style.display = completedTasks['telegram'] ? 'none' : 'block';
         }
 
         function checkTasks() {
-            if (dogClicks >= 10) {
-                document.getElementById('clickTask').querySelector('.claim-button').disabled = false;
-            }
+            localStorage.setItem('dogClicks', dogClicks);
+            updateTokensDisplay();
         }
 
-        updateTokensDisplay();
-        checkTasks();
+        function updateTokensDisplay() {
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            localStorage.setItem('tokens', tokens);
+            const completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || {};
+            updateTaskVisibility(completedTasks);
+        }
+
+        window.onload = function() {
+            updateTokensDisplay();
+            switchSection('main'); // Показать основное меню при загрузке
+        };
     </script>
 </body>
 </html>
