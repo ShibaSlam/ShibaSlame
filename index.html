@@ -10,38 +10,30 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('https://images.unsplash.com/photo-1593642632820-0e5a7a4e67b4'); /* Фоновое изображение */
-            background-size: cover;
-            font-family: 'Arial', sans-serif;
+            overflow: hidden; /* предотвращаем прокрутку из-за падающих монет */
             margin: 0;
-            touch-action: manipulation; /* Предотвращает увеличение на iPhone */
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1593642632820-0e5a7a4e67b4');
+            background-size: cover; /* фоновое изображение */
         }
         #game {
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             padding: 30px;
             width: 300px;
+            z-index: 2; /* Делаем контейнер игры выше монет */
         }
         #dog {
             width: 150px;
             cursor: pointer;
             transition: transform 0.2s;
         }
-        /* Анимация нажатия */
-        @keyframes bounce {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1); /* Увеличение при нажатии */
-            }
+        #dog:hover, #dog:active {
+            transform: scale(1.1);
         }
-        #dog:active {
-            animation: bounce 0.2s; /* Применяем анимацию при нажатии */
-        }
-        #tokens {
+        #tokens, #referralLink {
             font-size: 24px;
             margin-top: 20px;
             font-weight: bold;
@@ -65,51 +57,137 @@
             font-size: 28px;
             margin-bottom: 20px;
         }
+        #linkDisplay {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #4CAF50;
+        }
+        @keyframes fall {
+            0% { top: -50px; }
+            100% { top: 100vh; }
+        }
+        .coin {
+            position: absolute;
+            top: -50px; /* Начальная позиция выше экрана */
+            width: 30px; /* Размер монеты */
+            height: auto; /* Автоматическая высота для сохранения пропорций */
+            animation: fall linear infinite; /* Анимация падения */
+            z-index: 1; /* Положение монет ниже контейнера игры */
+        }
     </style>
 </head>
 <body>
     <div id="game">
         <h1>ShibaSlam</h1>
-        <img id="dog" src="https://i.ibb.co/vCWXvv3/IMG-4228.webp" alt="Shiba Dog"> <!-- Обновлено изображение собачки -->
+        <img id="dog" src="https://i.ibb.co/vCWXvv3/IMG-4228.webp" alt="Shiba Dog">
         <div id="tokens">Tokens: 0</div>
+        <button onclick="showReferralLink()">Your referral link</button>
+        <div id="linkDisplay"></div>
         <button id="youtubeBtn" onclick="completeTask('youtube')">Subscribe to YouTube (1M Tokens)</button>
         <button id="telegramBtn" onclick="completeTask('telegram')">Join Telegram (1.1M Tokens)</button>
+        <button id="claimReferralReward" onclick="claimReferralReward()">Claim Referral Reward</button>
     </div>
+
     <script>
-        let tokens = parseInt(localStorage.getItem('tokens')) || 0; // Загружаем токены из localStorage
-        let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true'; // Проверяем, завершено ли задание
-        let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true'; // Проверяем, завершено ли задание
+        let tokens = parseInt(localStorage.getItem('tokens')) || 0;
+        let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true';
+        let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true';
+
+        // Generate or retrieve referral link
+        let referralCode = localStorage.getItem('referralCode') || generateReferralCode();
+        localStorage.setItem('referralCode', referralCode);
+
+        // Track if user has claimed the referral reward
+        let referralClaimed = localStorage.getItem('referralClaimed') === 'true';
+
+        // Создаем анимацию падающих монет
+        function createCoin() {
+            const coin = document.createElement('img');
+            coin.src = 'https://i.ibb.co/McMdqWr/HEIF.jpg'; // Изображение монеты
+            coin.className = 'coin';
+            coin.style.left = Math.random() * 100 + 'vw'; // Случайная позиция по горизонтали
+            coin.style.animationDuration = (Math.random() * 3 + 2) + 's'; // Случайная продолжительность падения
+            document.body.appendChild(coin);
+            
+            // Удаляем монету после падения
+            coin.addEventListener('animationend', () => {
+                coin.remove();
+            });
+        }
+
+        // Создаем падающие монеты каждые 500 мс
+        setInterval(createCoin, 500);
 
         document.getElementById('dog').onclick = function() {
             tokens++;
             updateTokensDisplay();
+            // Анимация при нажатии на собаку
+            this.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 200);
+        };
+
+        function showReferralLink() {
+            const linkDisplay = document.getElementById('linkDisplay');
+            linkDisplay.innerHTML = `Your referral link: <a href="https://t.me/ShibaSlambot?ref=${referralCode}" target="_blank">https://t.me/ShibaSlambot?ref=${referralCode}</a>`;
+            linkDisplay.style.display = 'block';
+
+            // Automatically hide the link after 5 seconds
+            setTimeout(() => {
+                linkDisplay.style.display = 'none';
+            }, 5000);
         }
 
         function completeTask(task) {
             if (task === 'youtube' && !youtubeCompleted) {
-                youtubeCompleted = true; // Отмечаем, что задание завершено
-                tokens += 1000000; // Награда за подписку на YouTube
+                youtubeCompleted = true;
+                tokens += 1000000;
                 alert("You have subscribed to YouTube! 1M Tokens awarded.");
-                window.open('https://www.youtube.com/@ShibaSlam', '_blank'); // Открывает ссылку на YouTube
-                localStorage.setItem('youtubeCompleted', 'true'); // Сохраняем в localStorage
+                window.open('https://www.youtube.com/@ShibaSlam', '_blank');
+                localStorage.setItem('youtubeCompleted', 'true');
             } else if (task === 'telegram' && !telegramCompleted) {
-                telegramCompleted = true; // Отмечаем, что задание завершено
-                tokens += 1100000; // Награда за подписку на Telegram
+                telegramCompleted = true;
+                tokens += 1100000;
                 alert("You have joined the Telegram channel! 1.1M Tokens awarded.");
-                window.open('https://t.me/ShibaSlam', '_blank'); // Открывает ссылку на Telegram
-                localStorage.setItem('telegramCompleted', 'true'); // Сохраняем в localStorage
+                window.open('https://t.me/ShibaSlam', '_blank');
+                localStorage.setItem('telegramCompleted', 'true');
             } else {
                 alert("You have already completed this task!");
             }
             updateTokensDisplay();
         }
 
+        function claimReferralReward() {
+            if (!referralClaimed) {
+                // Check if the user has joined through the referral link
+                const urlParams = new URLSearchParams(window.location.search);
+                const refCode = urlParams.get('ref');
+
+                if (refCode && refCode === referralCode) {
+                    tokens += 50000; // Reward for using a referral link
+                    alert("Referral reward claimed! 50K Tokens awarded.");
+                    referralClaimed = true;
+                    localStorage.setItem('referralClaimed', 'true');
+                } else {
+                    alert("No referral found or you are not eligible for this reward.");
+                }
+            } else {
+                alert("You have already claimed your referral reward!");
+            }
+            updateTokensDisplay();
+        }
+
         function updateTokensDisplay() {
-            localStorage.setItem('tokens', tokens); // Сохраняем токены в localStorage
+            localStorage.setItem('tokens', tokens);
             document.getElementById('tokens').innerText = "Tokens: " + tokens;
         }
 
-        // Отображаем начальное количество токенов
+        function generateReferralCode() {
+            return 'REF' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
         updateTokensDisplay();
     </script>
 </body>
