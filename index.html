@@ -79,7 +79,7 @@
         <button id="telegramBtn" onclick="completeTask('telegram')">Join Telegram (1.1M Tokens)</button>
 
         <!-- New referral button -->
-        <button id="referralButton">Get Referral Link</button>
+        <button id="referralButton" onclick="showReferralLink()">Get Referral Link</button>
         <p id="referralLink"></p> <!-- Место для отображения реферальной ссылки -->
     </div>
     <script>
@@ -122,13 +122,12 @@
             document.getElementById('tokens').innerText = "Tokens: " + tokens;
         }
 
-        // Отображаем реферальную ссылку
-        document.getElementById('referralButton').onclick = function() {
-            const referralCode = "ABC123"; // Здесь замените на код пользователя
-            const referralUrl = `https://yourgame.com/register?ref=${referralCode}`; // Ваш URL с реферальным кодом
-            document.getElementById('referralLink').innerText = `Your referral link: ${referralUrl}`;
-            document.getElementById('referralLink').style.display = "block"; // Показываем ссылку
-        };
+        function showReferralLink() {
+            const referralLink = "https://shibaslam.github.io/ShibaSlame/register?ref=ABC123"; // Ваша реферальная ссылка
+            const referralElement = document.getElementById('referralLink');
+            referralElement.innerText = "Your referral link: " + referralLink; // Отображаем ссылку
+            referralElement.style.display = "block"; // Показываем ссылку
+        }
 
         // Отображаем начальное количество токенов
         updateTokensDisplay();
