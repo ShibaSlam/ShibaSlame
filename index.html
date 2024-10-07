@@ -14,6 +14,8 @@
             background-size: cover;
             font-family: 'Arial', sans-serif;
             margin: 0;
+            overflow: hidden; /* Запретить прокрутку страницы */
+            touch-action: manipulation; /* Убирает масштабирование на iPhone */
         }
         #game {
             text-align: center;
@@ -28,8 +30,15 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        #dog:hover {
-            transform: scale(1.1);
+        #dog:active {
+            transform: scale(0.9); /* Анимация при нажатии */
+        }
+        @keyframes shake {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2px, 0); }
+            50% { transform: translate(2px, 0); }
+            75% { transform: translate(-2px, 0); }
+            100% { transform: translate(0); }
         }
         #tokens {
             font-size: 24px;
@@ -55,6 +64,10 @@
             font-size: 28px;
             margin-bottom: 20px;
         }
+        #referralLink {
+            margin-top: 10px;
+            display: none; /* Скрыть изначально */
+        }
     </style>
 </head>
 <body>
@@ -64,15 +77,25 @@
         <div id="tokens">Tokens: 0</div>
         <button id="youtubeBtn" onclick="completeTask('youtube')">Subscribe to YouTube (1M Tokens)</button>
         <button id="telegramBtn" onclick="completeTask('telegram')">Join Telegram (1.1M Tokens)</button>
+
+        <!-- New referral button -->
+        <button id="referralButton">Get Referral Link</button>
+        <p id="referralLink"></p> <!-- Место для отображения реферальной ссылки -->
     </div>
     <script>
         let tokens = parseInt(localStorage.getItem('tokens')) || 0; // Загружаем токены из localStorage
         let youtubeCompleted = localStorage.getItem('youtubeCompleted') === 'true'; // Проверяем, завершено ли задание
         let telegramCompleted = localStorage.getItem('telegramCompleted') === 'true'; // Проверяем, завершено ли задание
 
-        document.getElementById('dog').onclick = function() {
+        const dogElement = document.getElementById('dog');
+
+        dogElement.onclick = function() {
             tokens++;
             updateTokensDisplay();
+            dogElement.classList.add('shake'); // Добавляем класс для анимации
+            setTimeout(() => {
+                dogElement.classList.remove('shake'); // Удаляем класс после анимации
+            }, 200); // Время анимации
         }
 
         function completeTask(task) {
@@ -98,6 +121,14 @@
             localStorage.setItem('tokens', tokens); // Сохраняем токены в localStorage
             document.getElementById('tokens').innerText = "Tokens: " + tokens;
         }
+
+        // Отображаем реферальную ссылку
+        document.getElementById('referralButton').onclick = function() {
+            const referralCode = "ABC123"; // Здесь замените на код пользователя
+            const referralUrl = `https://yourgame.com/register?ref=${referralCode}`; // Ваш URL с реферальным кодом
+            document.getElementById('referralLink').innerText = `Your referral link: ${referralUrl}`;
+            document.getElementById('referralLink').style.display = "block"; // Показываем ссылку
+        };
 
         // Отображаем начальное количество токенов
         updateTokensDisplay();
