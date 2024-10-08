@@ -11,10 +11,10 @@
             background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
             overflow: hidden;
             position: relative;
-            height: 100vh; /* Фиксированная высота */
-            width: 100vw; /* Фиксированная ширина */
-            max-width: 100%; /* Предотвращение увеличения */
-            max-height: 100%; /* Предотвращение увеличения */
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            max-height: 100%;
         }
 
         .section {
@@ -36,14 +36,14 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
             padding: 20px;
             position: relative;
-            z-index: 10; /* Устанавливаем z-index для интерфейса */
+            z-index: 10;
         }
 
         #dog {
             width: 250px;
             cursor: pointer;
             transition: transform 0.3s;
-            z-index: 20; /* Устанавливаем z-index для собачки */
+            z-index: 20;
         }
 
         #dog:active {
@@ -122,8 +122,8 @@
             position: absolute;
             top: -50px;
             width: 50px;
-            z-index: 5; /* Устанавливаем z-index для монет, чтобы они были на заднем плане, но видимыми */
-            animation: fall linear forwards; /* Применяем анимацию падения */
+            z-index: 5;
+            animation: fall linear forwards;
         }
 
         #navbar {
@@ -179,7 +179,7 @@
 
     <div id="main" class="section active">
         <h1>ShibaSlam</h1>
-        <div id="level">Level: 1</div>
+        <div id="level">Level: Novice</div>
         <div class="progress-bar">
             <div id="progressBar" class="progress-bar-fill"></div>
         </div>
@@ -229,131 +229,88 @@
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = parseInt(localStorage.getItem('dailyBonusDay')) || 0;
         
-        // Новый объект для отслеживания состояния наград
         const claimedRewards = {
             click: false,
             refer: false,
             telegram: false
         };
 
-        const progressToNextLevel = [20, 30, 50, 80]; // Прогресс для каждого уровня
-        const levelUpTokens = [100, 200, 300, 500, 1000]; // Награды за уровень
+        const progressToNextLevel = [100, 1000, 10000, 50000, 100000, 1000000, 10000000, 50000000, 100000000, 1000000000]; 
+        const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"]; 
 
         document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-        document.getElementById('level').innerText = `Level: ${level}`;
+        document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+        updateProgressBar();
 
-        function switchSection(section) {
-            document.querySelectorAll('.section').forEach(sec => {
-                sec.classList.remove('active');
-            });
-            document.getElementById(section).classList.add('active');
-        }
-
-        // Новый объект для отслеживания состояния наград
-const claimedRewards = {
-    click: false,
-    refer: false,
-    telegram: false
-};
-
-// Вызов этой функции при загрузке страницы
-window.onload = function() {
-    // Загрузка состояния наград из localStorage
-    const storedRewards = JSON.parse(localStorage.getItem('claimedRewards'));
-    if (storedRewards) {
-        claimedRewards.click = storedRewards.click;
-        claimedRewards.refer = storedRewards.refer;
-        claimedRewards.telegram = storedRewards.telegram;
-    }
-
-    // Инициализация других переменных
-    switchSection('main');
-};
-
-function claimReward(task) {
-    let rewardAmount = 0;
-
-    // Проверка, получена ли награда
-    if (task === 'click' && dogClicks >= 10 && !claimedRewards.click) {
-        rewardAmount = 100000; // Награда за задание
-        dogClicks = 0; // Обнуляем количество кликов
-        localStorage.setItem('dogClicks', dogClicks);
-        claimedRewards.click = true; // Устанавливаем, что награда получена
-    } else if (task === 'refer' && !claimedRewards.refer) {
-        rewardAmount = 200000; // Награда за задание
-        claimedRewards.refer = true; // Устанавливаем, что награда получена
-    } else if (task === 'telegram' && !claimedRewards.telegram) {
-        rewardAmount = 1100000; // Награда за задание
-        claimedRewards.telegram = true; // Устанавливаем, что награда получена
-    }
-
-    if (rewardAmount > 0) {
-        tokens += rewardAmount; // Добавляем токены
-        localStorage.setItem('tokens', tokens);
-        alert(`Reward claimed! Tokens: ${rewardAmount.toLocaleString()}`);
-        updateTokens();
-        checkLevelUp(); // Проверка повышения уровня
-    } else {
-        alert("Task not completed or already claimed!");
-    }
-
-    // Сохранение состояния claimedRewards в localStorage
-    localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
-}
-
-        function updateTokens() {
+        document.getElementById('dog').addEventListener('click', () => {
+            dogClicks++;
+            tokens++;
+            localStorage.setItem('dogClicks', dogClicks);
+            localStorage.setItem('tokens', tokens);
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            checkLevelUp();
+        });
+
+        function updateProgressBar() {
+            const progress = (tokens / progressToNextLevel[level - 1]) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
         }
 
         function checkLevelUp() {
-            let progress = dogClicks + tokens; // Прогресс к новому уровню
-            const currentLevel = level - 1;
-
-            if (progress >= progressToNextLevel[currentLevel]) {
+            if (tokens >= progressToNextLevel[level - 1]) {
                 level++;
                 localStorage.setItem('level', level);
-                alert("Congratulations! You've leveled up!");
-                document.getElementById('level').innerText = `Level: ${level}`;
-                progress = 0; // Сбрасываем прогресс после повышения уровня
+                document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+                updateProgressBar();
             }
-            const progressPercentage = (progress / progressToNextLevel[currentLevel]) * 100;
-            document.getElementById('progressBar').style.width = `${progressPercentage}%`;
         }
 
-        document.getElementById('dog').addEventListener('click', function() {
-            dogClicks++;
-            localStorage.setItem('dogClicks', dogClicks);
-            tokens++; // Для тестирования, добавляем 1 токен за клик
-            updateTokens();
-            checkLevelUp(); // Проверка повышения уровня
-            createCoin();
-        });
+        function switchSection(section) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+        }
 
-        function createCoin() {
-            const coin = document.createElement('img');
-            coin.src = 'https://i.ibb.co/x5KH8VR/IMG-4255.png'; // Замените на URL вашей монеты
-            coin.className = 'coin';
-            document.body.appendChild(coin);
-            const randomX = Math.random() * (window.innerWidth - 50);
-            coin.style.left = `${randomX}px`;
-            coin.style.animationDuration = `${Math.random() * 2 + 2}s`; // Случайная скорость падения
-            coin.style.top = '0px';
-            coin.style.animationName = 'fall';
-            coin.addEventListener('animationend', function() {
-                coin.remove();
-            });
+        function claimReward(task) {
+            if (claimedRewards[task]) {
+                alert("You have already claimed this reward!");
+                return;
+            }
+            let reward = 0;
+            switch (task) {
+                case 'click':
+                    if (dogClicks >= 10) {
+                        reward = 100000; // 100K Tokens
+                        dogClicks -= 10; // Reset task
+                        localStorage.setItem('dogClicks', dogClicks);
+                    } else {
+                        alert("You need to complete 10 clicks to claim this reward.");
+                        return;
+                    }
+                    break;
+                case 'refer':
+                    reward = 200000; // 200K Tokens
+                    claimedRewards.refer = true; // Mark task as claimed
+                    break;
+                case 'telegram':
+                    reward = 1100000; // 1.1M Tokens
+                    claimedRewards.telegram = true; // Mark task as claimed
+                    break;
+            }
+            tokens += reward;
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            alert(`You've claimed ${reward} Tokens!`);
         }
 
         function copyReferralLink() {
-            const referralLink = "https://shibaslam.com/?ref=" + localStorage.getItem('userId');
+            const referralLink = "http://yourgameurl.com/referral";
             navigator.clipboard.writeText(referralLink).then(() => {
-                alert('Referral link copied to clipboard!');
+                alert("Referral link copied to clipboard!");
+            }, () => {
+                alert("Failed to copy referral link.");
             });
         }
-
-        window.onload = function() {
-            switchSection('main');
-        };
     </script>
 </body>
 </html>
