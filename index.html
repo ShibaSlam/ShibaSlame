@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ShibaSlam</title>
     <style>
         body {
@@ -11,6 +11,10 @@
             background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
             overflow: hidden;
             position: relative;
+            height: 100vh; /* Фиксированная высота */
+            width: 100vw; /* Фиксированная ширина */
+            max-width: 100%; /* Предотвращение увеличения */
+            max-height: 100%; /* Предотвращение увеличения */
         }
 
         .section {
@@ -32,13 +36,14 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
             padding: 20px;
             position: relative;
-            z-index: 2;
+            z-index: 10; /* Устанавливаем z-index для интерфейса */
         }
 
         #dog {
             width: 250px;
             cursor: pointer;
             transition: transform 0.3s;
+            z-index: 20; /* Устанавливаем z-index для собачки */
         }
 
         #dog:active {
@@ -57,11 +62,28 @@
             }
         }
 
-        #tokens, #level {
+        #tokens, #level, #dailyBonus {
             font-size: 32px;
             margin-top: 20px;
             font-weight: bold;
             color: #333;
+        }
+
+        .progress-bar {
+            width: 80%;
+            margin: 20px auto;
+            background: #ddd;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            height: 100%;
+            width: 0;
+            border-radius: 15px;
+            transition: width 0.3s;
         }
 
         .button {
@@ -100,8 +122,8 @@
             position: absolute;
             top: -50px;
             width: 50px;
-            z-index: 0;
-            animation: fall linear infinite;
+            z-index: 5; /* Устанавливаем z-index для монет, чтобы они были на заднем плане, но видимыми */
+            animation: fall linear forwards; /* Применяем анимацию падения */
         }
 
         #navbar {
@@ -157,11 +179,13 @@
 
     <div id="main" class="section active">
         <h1>ShibaSlam</h1>
+        <div id="level">Level: 1</div>
+        <div class="progress-bar">
+            <div id="progressBar" class="progress-bar-fill"></div>
+        </div>
         <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog">
         <div id="tokens">Tokens: 0</div>
-        <div id="level">Level: 1</div>
-        <button class="button" onclick="showReferralLink()">Your referral link</button>
-        <div id="linkDisplay"></div>
+        <div id="dailyBonus" class="button">Claim Daily Bonus</div>
     </div>
 
     <div id="frens" class="section">
@@ -203,113 +227,110 @@
         let tokens = parseInt(localStorage.getItem('tokens')) || 0;
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         let level = parseInt(localStorage.getItem('level')) || 1;
-        const userId = localStorage.getItem('userId') || generateUserId();
-        const referralLinkBase = `https://t.me/ShibaSlambot?ref=`;
+        let dailyBonusDay = parseInt(localStorage.getItem('dailyBonusDay')) || 0;
+        
+        // Новый объект для отслеживания состояния наград
+        const claimedRewards = {
+            click: false,
+            refer: false,
+            telegram: false
+        };
 
-        function generateUserId() {
-            const id = Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('userId', id);
-            return id;
+        const progressToNextLevel = [20, 30, 50, 80]; // Прогресс для каждого уровня
+        const levelUpTokens = [100, 200, 300, 500, 1000]; // Награды за уровень
+
+        document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        document.getElementById('level').innerText = `Level: ${level}`;
+
+        function switchSection(section) {
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(section).classList.add('active');
         }
+
+        function claimReward(task) {
+            if (task === 'click' && dogClicks >= 10 && !claimedRewards.click) {
+                tokens += 100000; // Награда за задание
+                localStorage.setItem('tokens', tokens);
+                dogClicks = 0; // Обнуляем количество кликов
+                localStorage.setItem('dogClicks', dogClicks);
+                claimedRewards.click = true; // Устанавливаем, что награда получена
+                alert("Reward claimed! Tokens: 100,000");
+                updateTokens();
+                checkLevelUp(); // Проверка повышения уровня
+            } else if (task === 'refer' && !claimedRewards.refer) {
+                tokens += 200000; // Награда за задание
+                localStorage.setItem('tokens', tokens);
+                claimedRewards.refer = true; // Устанавливаем, что награда получена
+                alert("Reward claimed! Tokens: 200,000");
+                updateTokens();
+                checkLevelUp(); // Проверка повышения уровня
+            } else if (task === 'telegram' && !claimedRewards.telegram) {
+                tokens += 1100000; // Награда за задание
+                localStorage.setItem('tokens', tokens);
+                claimedRewards.telegram = true; // Устанавливаем, что награда получена
+                alert("Reward claimed! Tokens: 1,100,000");
+                updateTokens();
+                checkLevelUp(); // Проверка повышения уровня
+            } else {
+                alert("Task not completed or already claimed!");
+            }
+        }
+
+        function updateTokens() {
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        }
+
+        function checkLevelUp() {
+            let progress = dogClicks + tokens; // Прогресс к новому уровню
+            const currentLevel = level - 1;
+
+            if (progress >= progressToNextLevel[currentLevel]) {
+                level++;
+                localStorage.setItem('level', level);
+                alert("Congratulations! You've leveled up!");
+                document.getElementById('level').innerText = `Level: ${level}`;
+                progress = 0; // Сбрасываем прогресс после повышения уровня
+            }
+            const progressPercentage = (progress / progressToNextLevel[currentLevel]) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+        }
+
+        document.getElementById('dog').addEventListener('click', function() {
+            dogClicks++;
+            localStorage.setItem('dogClicks', dogClicks);
+            tokens++; // Для тестирования, добавляем 1 токен за клик
+            updateTokens();
+            checkLevelUp(); // Проверка повышения уровня
+            createCoin();
+        });
 
         function createCoin() {
             const coin = document.createElement('img');
-            coin.src = 'https://i.ibb.co/9nN1Shn/IMG-4255.png';
+            coin.src = 'https://i.ibb.co/x5KH8VR/IMG-4255.png'; // Замените на URL вашей монеты
             coin.className = 'coin';
-            coin.style.left = Math.random() * 100 + 'vw';
-            coin.style.animationDuration = (Math.random() * 2 + 3) + 's';
             document.body.appendChild(coin);
-            coin.addEventListener('animationend', () => coin.remove());
-        }
-
-        setInterval(createCoin, 500);
-
-        function switchSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            if (sectionId === 'frens') {
-                document.getElementById('referralLinkDisplay').innerHTML = `Your referral link: <a href="${referralLinkBase}${userId}" target="_blank">${referralLinkBase}${userId}</a>`;
-            }
-            checkTasks(); // Проверяем выполнение заданий при переключении секции
-            updateTopPlayers(); // Обновляем топ игроков при переключении
-        }
-
-        document.getElementById('dog').onclick = function
-
-() {
-            dogClicks++;
-            tokens += 1;
-            localStorage.setItem('dogClicks', dogClicks);
-            localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-            document.getElementById('level').innerText = `Level: ${level}`;
-            checkLevelUp();
-        };
-
-        function checkLevelUp() {
-            if (dogClicks >= 10000 && level === 1) {
-                level = 2;
-                alert("Congratulations! You've reached Level 2!");
-            } else if (dogClicks >= 20000 && level === 2) {
-                level = 3;
-                alert("Congratulations! You've reached Level 3!");
-            }
-            localStorage.setItem('level', level);
-        }
-
-        function showReferralLink() {
-            const link = `Your referral link: ${referralLinkBase}${userId}`;
-            document.getElementById('linkDisplay').innerText = link;
-        }
-
-        function copyReferralLink() {
-            const copyText = `${referralLinkBase}${userId}`;
-            navigator.clipboard.writeText(copyText).then(() => {
-                alert("Referral link copied!");
+            const randomX = Math.random() * (window.innerWidth - 50);
+            coin.style.left = `${randomX}px`;
+            coin.style.animationDuration = `${Math.random() * 2 + 2}s`; // Случайная скорость падения
+            coin.style.top = '0px';
+            coin.style.animationName = 'fall';
+            coin.addEventListener('animationend', function() {
+                coin.remove();
             });
         }
 
-        function claimReward(taskType) {
-            let reward = 0;
-            if (taskType === 'click' && !localStorage.getItem('clickTaskCompleted')) {
-                reward = 100000; // 100K Tokens for clicking task
-                localStorage.setItem('clickTaskCompleted', true);
-                alert("You have claimed your reward of 100K Tokens!");
-            } else if (taskType === 'refer' && !localStorage.getItem('referTaskCompleted')) {
-                reward = 200000; // 200K Tokens for referral task
-                localStorage.setItem('referTaskCompleted', true);
-                alert("You have claimed your reward of 200K Tokens!");
-            } else if (taskType === 'telegram' && !localStorage.getItem('telegramTaskCompleted')) {
-                reward = 1100000; // 1.1M Tokens for Telegram task
-                localStorage.setItem('telegramTaskCompleted', true);
-                alert("You have claimed your reward of 1.1M Tokens!");
-            } else {
-                alert("You have already claimed this reward.");
-                return;
-            }
-            tokens += reward;
-            localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        function copyReferralLink() {
+            const referralLink = "https://shibaslam.com/?ref=" + localStorage.getItem('userId');
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Referral link copied to clipboard!');
+            });
         }
 
-        function updateTopPlayers() {
-            const topPlayers = JSON.parse(localStorage.getItem('topPlayers')) || [];
-            topPlayers.push({ userId, tokens });
-            topPlayers.sort((a, b) => b.tokens - a.tokens);
-            topPlayers.splice(100); // Keep only top 100 players
-            localStorage.setItem('topPlayers', JSON.stringify(topPlayers));
-            displayTopPlayers(topPlayers);
-        }
-
-        function displayTopPlayers(players) {
-            const playerList = players.map((player, index) => `<div>${index + 1}. Player ID: ${player.userId} - Tokens: ${player.tokens}</div>`).join('');
-            document.getElementById('topPlayers').innerHTML = playerList;
-        }
-
-        checkTasks();
-        document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-        document.getElementById('level').innerText = `Level: ${level}`;
-        updateTopPlayers();
+        window.onload = function() {
+            switchSection('main');
+        };
     </script>
 </body>
 </html>
