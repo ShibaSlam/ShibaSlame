@@ -249,7 +249,28 @@
             document.getElementById(section).classList.add('active');
         }
 
-        function claimReward(task) {
+        // Новый объект для отслеживания состояния наград
+const claimedRewards = {
+    click: false,
+    refer: false,
+    telegram: false
+};
+
+// Вызов этой функции при загрузке страницы
+window.onload = function() {
+    // Загрузка состояния наград из localStorage
+    const storedRewards = JSON.parse(localStorage.getItem('claimedRewards'));
+    if (storedRewards) {
+        claimedRewards.click = storedRewards.click;
+        claimedRewards.refer = storedRewards.refer;
+        claimedRewards.telegram = storedRewards.telegram;
+    }
+
+    // Инициализация других переменных
+    switchSection('main');
+};
+
+function claimReward(task) {
     let rewardAmount = 0;
 
     // Проверка, получена ли награда
@@ -279,15 +300,6 @@
     // Сохранение состояния claimedRewards в localStorage
     localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
 }
-
-// Вызов этой функции при загрузке страницы
-window.onload = function() {
-    claimedRewards.click = JSON.parse(localStorage.getItem('claimedRewards')).click || false;
-    claimedRewards.refer = JSON.parse(localStorage.getItem('claimedRewards')).refer || false;
-    claimedRewards.telegram = JSON.parse(localStorage.getItem('claimedRewards')).telegram || false;
-
-    switchSection('main');
-};
 
         function updateTokens() {
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
