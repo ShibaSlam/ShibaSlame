@@ -235,8 +235,22 @@
             telegram: localStorage.getItem('claimedTelegramReward') === 'true'
         };
 
-        const progressToNextLevel = [100, 1000, 10000, 50000, 100000, 1000000, 10000000, 50000000, 100000000, 1000000000]; 
-        const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"]; 
+        const progressToNextLevel = [100, 1000, 10000, 50000, 100000, 1000000, 10000000, 50000000, 100000000, 1000000000];
+        const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"];
+        
+        // Массив с изображениями для каждого уровня
+        const dogImages = [
+            "https://i.ibb.co/DVdW06b/IMG-4253.png", // 1 уровень (остается старым)
+            "https://i.ibb.co/LJjnYvW/HEIF.jpg", // 2 уровень
+            "https://i.ibb.co/3sGsxMw/HEIF.jpg", // 3 уровень
+            "https://i.ibb.co/ZYxPFjF/HEIF.jpg", // 4 уровень
+            "https://i.ibb.co/XxhWpN2/HEIF.jpg", // 5 уровень
+            "https://i.ibb.co/pQx1fzF/HEIF.jpg", // 6 уровень
+            "https://i.ibb.co/s3D1kHT/HEIF.jpg", // 7 уровень
+            "https://i.ibb.co/HVD30ZR/HEIF.jpg", // 8 уровень
+            "https://i.ibb.co/wwS117Y/HEIF.jpg", // 9 уровень
+            "https://i.ibb.co/wwS117Y/HEIF.jpg"  // 10 уровень
+        ];
 
         document.addEventListener('DOMContentLoaded', function() {
             updateUI();
@@ -246,10 +260,17 @@
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
             document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
             updateProgressBar();
+            updateDogImage();
 
             // Проверка выполнения задания
             if (dogClicks >= 10 && !claimedRewards.click) {
                 document.getElementById('clickTask').innerHTML = 'You have completed the task!<br><button class="button claim-button" onclick="claimReward(\'click\')">Claim Reward</button>';
+            }
+        }
+
+        function updateDogImage() {
+            if (level <= dogImages.length) {
+                document.getElementById('dog').src = dogImages[level - 1];
             }
         }
 
@@ -284,6 +305,7 @@
                 localStorage.setItem('tokens', tokens);
                 document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 updateProgressBar();
+                updateDogImage(); // Обновляем изображение собачки при повышении уровня
             }
         }
 
