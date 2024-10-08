@@ -228,87 +228,113 @@
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = parseInt(localStorage.getItem('dailyBonusDay')) || 0;
-        
+
         const claimedRewards = {
-            click: false,
-            refer: false,
-            telegram: false
+            click: localStorage.getItem('claimedClickReward') === 'true',
+            refer: localStorage.getItem('claimedReferReward') === 'true',
+            telegram: localStorage.getItem('claimedTelegramReward') === 'true'
         };
 
         const progressToNextLevel = [100, 1000, 10000, 50000, 100000, 1000000, 10000000, 50000000, 100000000, 1000000000]; 
         const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"]; 
 
-        document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-        document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
-        updateProgressBar();
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUI();
+        });
 
-        document.getElementById('dog').addEventListener('click', () => {
-            dogClicks++;
-            tokens++;
-            localStorage.setItem('dogClicks', dogClicks);
-            localStorage.setItem('tokens', tokens);
+        function updateUI() {
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-            checkLevelUp();
+            document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+            updateProgressBar();
+
+            // Проверка выполнения задания
+            if (dogClicks >= 10 && !claimedRewards.click) {
+                document.getElementById('clickTask').innerHTML = 'You have completed the task!<br><button class="button claim-button" onclick="claimReward(\'click\')">Claim Reward</button>';
+            }
+        }
+
+        document.getElementById('dog').addEventListener('click', function() {
+            dogClicks++;
+            localStorage.setItem('dogClicks', dogClicks);
+            const tokensToAdd = level; // Количество токенов за клик увеличивается с уровнем
+            tokens += tokensToAdd;
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`; // Обновляем отображение токенов
+            updateProgressBar();
+
+            if (dogClicks >= 10 && !claimedRewards.click) {
+                document.getElementById('clickTask').innerHTML = 'You have completed the task!<br><button class="button claim-button" onclick="claimReward(\'click\')">Claim Reward</button>';
+            }
         });
 
         function updateProgressBar() {
-            const progress = (tokens / progressToNextLevel[level - 1]) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
+            const progress = tokens / progressToNextLevel[level - 1] * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            if (progress >= 100) {
+                levelUp();
+            }
         }
 
-        function checkLevelUp() {
-            if (tokens >= progressToNextLevel[level - 1]) {
+        function levelUp() {
+            if (level < progressToNextLevel.length) {
                 level++;
                 localStorage.setItem('level', level);
                 document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+                tokens += 100; // Награда за повышение уровня
+                localStorage.setItem('tokens', tokens);
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 updateProgressBar();
             }
         }
 
-        function switchSection(section) {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(sec => sec.classList.remove('active'));
-            document.getElementById(section).classList.add('active');
+        function claimReward(task) {
+            if (task === 'click' && !claimedRewards.click) {
+                tokens += 100000; // Награда за выполнение задачи клика
+                localStorage.setItem('tokens', tokens);
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                claimedRewards.click = true;
+                localStorage.setItem('claimedClickReward', true);
+                document.getElementById('clickTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
+            } else if (task === 'refer' && !claimedRewards.refer) {
+                tokens += 200000; // Награда за задачу реферала
+                localStorage.setItem('tokens', tokens);
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                claimedRewards.refer = true;
+                localStorage.setItem('claimedReferReward', true);
+                document.getElementById('referTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
+            } else if (task === 'telegram' && !claimedRewards.telegram) {
+                tokens += 1100000; // Награда за задачу Telegram
+                localStorage.setItem('tokens', tokens);
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                claimedRewards.telegram = true;
+                localStorage.setItem('claimedTelegramReward', true);
+                document.getElementById('telegramTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
+            } else {
+                alert('Reward already claimed or task not completed.');
+            }
         }
 
-        function claimReward(task) {
-            if (claimedRewards[task]) {
-                alert("You have already claimed this reward!");
-                return;
+        function switchSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (sectionId === 'frens') {
+                generateReferralLink();
             }
-            let reward = 0;
-            switch (task) {
-                case 'click':
-                    if (dogClicks >= 10) {
-                        reward = 100000; // 100K Tokens
-                        dogClicks -= 10; // Reset task
-                        localStorage.setItem('dogClicks', dogClicks);
-                    } else {
-                        alert("You need to complete 10 clicks to claim this reward.");
-                        return;
-                    }
-                    break;
-                case 'refer':
-                    reward = 200000; // 200K Tokens
-                    claimedRewards.refer = true; // Mark task as claimed
-                    break;
-                case 'telegram':
-                    reward = 1100000; // 1.1M Tokens
-                    claimedRewards.telegram = true; // Mark task as claimed
-                    break;
-            }
-            tokens += reward;
-            localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-            alert(`You've claimed ${reward} Tokens!`);
+        }
+
+        function generateReferralLink() {
+            const baseLink = window.location.href.split('#')[0];
+            const referralCode = 'USER123'; // Динамическое генерирование кода реферала можно реализовать позже
+            document.getElementById('referralLinkDisplay').innerText = `${baseLink}?ref=${referralCode}`;
         }
 
         function copyReferralLink() {
-            const referralLink = "http://yourgameurl.com/referral";
-            navigator.clipboard.writeText(referralLink).then(() => {
-                alert("Referral link copied to clipboard!");
+            const link = document.getElementById('referralLinkDisplay').innerText;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Referral link copied to clipboard!');
             }, () => {
-                alert("Failed to copy referral link.");
+                alert('Failed to copy referral link.');
             });
         }
     </script>
