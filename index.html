@@ -250,33 +250,35 @@
         }
 
         function claimReward(task) {
-            if (task === 'click' && dogClicks >= 10 && !claimedRewards.click) {
-                tokens += 100000; // Награда за задание
-                localStorage.setItem('tokens', tokens);
-                dogClicks = 0; // Обнуляем количество кликов
-                localStorage.setItem('dogClicks', dogClicks);
-                claimedRewards.click = true; // Устанавливаем, что награда получена
-                alert("Reward claimed! Tokens: 100,000");
-                updateTokens();
-                checkLevelUp(); // Проверка повышения уровня
-            } else if (task === 'refer' && !claimedRewards.refer) {
-                tokens += 200000; // Награда за задание
-                localStorage.setItem('tokens', tokens);
-                claimedRewards.refer = true; // Устанавливаем, что награда получена
-                alert("Reward claimed! Tokens: 200,000");
-                updateTokens();
-                checkLevelUp(); // Проверка повышения уровня
-            } else if (task === 'telegram' && !claimedRewards.telegram) {
-                tokens += 1100000; // Награда за задание
-                localStorage.setItem('tokens', tokens);
-                claimedRewards.telegram = true; // Устанавливаем, что награда получена
-                alert("Reward claimed! Tokens: 1,100,000");
-                updateTokens();
-                checkLevelUp(); // Проверка повышения уровня
-            } else {
-                alert("Task not completed or already claimed!");
-            }
+    let rewardAmount = 0;
+    let taskName = '';
+
+    if (task === 'click' && dogClicks >= 10 && !claimedRewards.click) {
+        rewardAmount = 100000; // Награда за задание
+        taskName = 'click';
+    } else if (task === 'refer' && !claimedRewards.refer) {
+        rewardAmount = 200000; // Награда за задание
+        taskName = 'refer';
+    } else if (task === 'telegram' && !claimedRewards.telegram) {
+        rewardAmount = 1100000; // Награда за задание
+        taskName = 'telegram';
+    }
+
+    if (rewardAmount > 0) {
+        tokens += rewardAmount; // Добавляем токены
+        localStorage.setItem('tokens', tokens);
+        if (taskName === 'click') {
+            dogClicks = 0; // Обнуляем количество кликов
+            localStorage.setItem('dogClicks', dogClicks);
         }
+        claimedRewards[taskName] = true; // Устанавливаем, что награда получена
+        alert(`Reward claimed! Tokens: ${rewardAmount.toLocaleString()}`);
+        updateTokens();
+        checkLevelUp(); // Проверка повышения уровня
+    } else {
+        alert("Task not completed or already claimed!");
+    }
+}
 
         function updateTokens() {
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
