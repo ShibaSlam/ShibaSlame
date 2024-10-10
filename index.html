@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -238,29 +239,27 @@
         const progressToNextLevel = [100, 1000, 10000, 50000, 100000, 1000000, 10000000, 50000000, 100000000, 1000000000];
         const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"];
         
-        const levelNames = ["Novice", "Apprentice", "Adept", "Expert", "Master", "Grand Master", "Legend", "Mythic", "Ultimate Titan"];
-
-// Массив с изображениями для каждого уровня
-const dogImages = [
-    "https://i.ibb.co/DVdW06b/IMG-4253.png", // 1 уровень (остается старым)
-    "https://i.ibb.co/n3Pdw6y/IMG-4296.png", // 2 уровень
-    "https://i.ibb.co/M5V8Zsn/IMG-4300.png", // 3 уровень
-    "https://i.ibb.co/TTHh7gS/IMG-4299.png", // 4 уровень
-    "https://i.ibb.co/xmjyfZ4/IMG-4297.png", // 5 уровень
-    "https://i.ibb.co/pQx1fzF/HEIF.jpg",     // 6 уровень
-    "https://i.ibb.co/s3D1kHT/HEIF.jpg",     // 7 уровень
-    "https://i.ibb.co/HVD30ZR/HEIF.jpg",     // 8 уровень
-    "https://i.ibb.co/wwS117Y/HEIF.jpg",     // 9 уровень
-    "https://i.ibb.co/wwS117Y/HEIF.jpg"      // 10 уровень
-];
+        // Массив с изображениями для каждого уровня
+        const dogImages = [
+            "https://i.ibb.co/DVdW06b/IMG-4253.png", // 1 уровень (остается старым)
+            "https://i.ibb.co/LJjnYvW/HEIF.jpg", // 2 уровень
+            "https://i.ibb.co/3sGsxMw/HEIF.jpg", // 3 уровень
+            "https://i.ibb.co/ZYxPFjF/HEIF.jpg", // 4 уровень
+            "https://i.ibb.co/XxhWpN2/HEIF.jpg", // 5 уровень
+            "https://i.ibb.co/pQx1fzF/HEIF.jpg", // 6 уровень
+            "https://i.ibb.co/s3D1kHT/HEIF.jpg", // 7 уровень
+            "https://i.ibb.co/HVD30ZR/HEIF.jpg", // 8 уровень
+            "https://i.ibb.co/wwS117Y/HEIF.jpg", // 9 уровень
+            "https://i.ibb.co/wwS117Y/HEIF.jpg"  // 10 уровень
+        ];
 
         document.addEventListener('DOMContentLoaded', function() {
             updateUI();
         });
 
         function updateUI() {
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-            document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+            document.getElementById('tokens').innerText = `Tokens: `;
+            document.getElementById('level').innerText = `Level: `;
             updateProgressBar();
             updateDogImage();
 
@@ -282,7 +281,7 @@ const dogImages = [
             const tokensToAdd = level; // Количество токенов за клик увеличивается с уровнем
             tokens += tokensToAdd;
             localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`; // Обновляем отображение токенов
+            document.getElementById('tokens').innerText = `Tokens: `; // Обновляем отображение токенов
             updateProgressBar();
 
             if (dogClicks >= 10 && !claimedRewards.click) {
@@ -302,10 +301,10 @@ const dogImages = [
             if (level < progressToNextLevel.length) {
                 level++;
                 localStorage.setItem('level', level);
-                document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+                document.getElementById('level').innerText = `Level: `;
                 tokens += 100; // Награда за повышение уровня
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                document.getElementById('tokens').innerText = `Tokens: `;
                 updateProgressBar();
                 updateDogImage(); // Обновляем изображение собачки при повышении уровня
             }
@@ -315,21 +314,21 @@ const dogImages = [
             if (task === 'click' && !claimedRewards.click) {
                 tokens += 100000; // Награда за выполнение задачи клика
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                document.getElementById('tokens').innerText = `Tokens: `;
                 claimedRewards.click = true;
                 localStorage.setItem('claimedClickReward', true);
                 document.getElementById('clickTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
             } else if (task === 'refer' && !claimedRewards.refer) {
                 tokens += 200000; // Награда за задачу реферала
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                document.getElementById('tokens').innerText = `Tokens: `;
                 claimedRewards.refer = true;
                 localStorage.setItem('claimedReferReward', true);
                 document.getElementById('referTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
             } else if (task === 'telegram' && !claimedRewards.telegram) {
                 tokens += 1100000; // Награда за задачу Telegram
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                document.getElementById('tokens').innerText = `Tokens: `;
                 claimedRewards.telegram = true;
                 localStorage.setItem('claimedTelegramReward', true);
                 document.getElementById('telegramTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
@@ -350,7 +349,7 @@ const dogImages = [
         function generateReferralLink() {
             const baseLink = window.location.href.split('#')[0];
             const referralCode = 'USER123'; // Динамическое генерирование кода реферала можно реализовать позже
-            document.getElementById('referralLinkDisplay').innerText = `${baseLink}?ref=${referralCode}`;
+            document.getElementById('referralLinkDisplay').innerText = `?ref=`;
         }
 
         function copyReferralLink() {
