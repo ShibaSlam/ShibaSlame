@@ -257,8 +257,8 @@
         });
 
         function updateUI() {
-            document.getElementById('tokens').innerText = `Tokens: `;
-            document.getElementById('level').innerText = `Level: `;
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
             updateProgressBar();
             updateDogImage();
 
@@ -280,7 +280,7 @@
             const tokensToAdd = level; // Количество токенов за клик увеличивается с уровнем
             tokens += tokensToAdd;
             localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: `; // Обновляем отображение токенов
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`; // Обновляем отображение токенов
             updateProgressBar();
 
             if (dogClicks >= 10 && !claimedRewards.click) {
@@ -300,10 +300,10 @@
             if (level < progressToNextLevel.length) {
                 level++;
                 localStorage.setItem('level', level);
-                document.getElementById('level').innerText = `Level: `;
+                document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
                 tokens += 100; // Награда за повышение уровня
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: `;
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 updateProgressBar();
                 updateDogImage(); // Обновляем изображение собачки при повышении уровня
             }
@@ -313,21 +313,21 @@
             if (task === 'click' && !claimedRewards.click) {
                 tokens += 100000; // Награда за выполнение задачи клика
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: `;
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 claimedRewards.click = true;
                 localStorage.setItem('claimedClickReward', true);
                 document.getElementById('clickTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
             } else if (task === 'refer' && !claimedRewards.refer) {
                 tokens += 200000; // Награда за задачу реферала
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: `;
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 claimedRewards.refer = true;
                 localStorage.setItem('claimedReferReward', true);
                 document.getElementById('referTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
             } else if (task === 'telegram' && !claimedRewards.telegram) {
                 tokens += 1100000; // Награда за задачу Telegram
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: `;
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
                 claimedRewards.telegram = true;
                 localStorage.setItem('claimedTelegramReward', true);
                 document.getElementById('telegramTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
@@ -348,7 +348,7 @@
         function generateReferralLink() {
             const baseLink = window.location.href.split('#')[0];
             const referralCode = 'USER123'; // Динамическое генерирование кода реферала можно реализовать позже
-            document.getElementById('referralLinkDisplay').innerText = `?ref=`;
+            document.getElementById('referralLinkDisplay').innerText = `${baseLink}?ref=${referralCode}`;
         }
 
         function copyReferralLink() {
