@@ -241,124 +241,108 @@
         // Массив с изображениями для каждого уровня
         const dogImages = [
             "https://i.ibb.co/DVdW06b/IMG-4253.png", // 1 уровень (остается старым)
-            "https://i.ibb.co/LJjnYvW/HEIF.jpg", // 2 уровень
-            "https://i.ibb.co/3sGsxMw/HEIF.jpg", // 3 уровень
-            "https://i.ibb.co/ZYxPFjF/HEIF.jpg", // 4 уровень
-            "https://i.ibb.co/XxhWpN2/HEIF.jpg", // 5 уровень
-            "https://i.ibb.co/pQx1fzF/HEIF.jpg", // 6 уровень
-            "https://i.ibb.co/s3D1kHT/HEIF.jpg", // 7 уровень
-            "https://i.ibb.co/HVD30ZR/HEIF.jpg", // 8 уровень
-            "https://i.ibb.co/wwS117Y/HEIF.jpg", // 9 уровень
-            "https://i.ibb.co/wwS117Y/HEIF.jpg"  // 10 уровень
+            "https://i.ibb.co/n3Pdw6y/IMG-4296.png", // 2 уровень
+            "https://i.ibb.co/M5V8Zsn/IMG-4300.png", // 3 уровень
+            "https://i.ibb.co/TTHh7gS/IMG-4299.png", // 4 уровень
+            "https://i.ibb.co/xmjyfZ4/IMG-4297.png", // 5 уровень
+            "https://i.ibb.co/XXQfK7D/IMG-4294.png", // 6 уровень
+            "https://i.ibb.co/DMQpnmv/IMG-4298.png", // 7 уровень
+            "https://i.ibb.co/0QsKRm8/IMG-4293.png", // 8 уровень
+            "https://i.ibb.co/58DNWLX/IMG-4292.png", // 9 уровень
+            "https://i.ibb.co/MZMMCKx/IMG-4523.png"  // 10 уровень
         ];
 
-        document.addEventListener('DOMContentLoaded', function() {
-            updateUI();
-        });
+        function switchSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
 
-        function updateUI() {
+            if (sectionId === 'main') {
+                updateTokensDisplay();
+                updateDogImage();
+                updateProgressBar();
+            } else if (sectionId === 'frens') {
+                generateReferralLink();
+            } else if (sectionId === 'tasks') {
+                updateTaskButtons();
+            } else if (sectionId === 'stats') {
+                displayTopPlayers();
+            }
+        }
+
+        function updateTokensDisplay() {
             document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
             document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
-            updateProgressBar();
-            updateDogImage();
-
-            // Проверка выполнения задания
-            if (dogClicks >= 10 && !claimedRewards.click) {
-                document.getElementById('clickTask').innerHTML = 'You have completed the task!<br><button class="button claim-button" onclick="claimReward(\'click\')">Claim Reward</button>';
-            }
         }
 
         function updateDogImage() {
-            if (level <= dogImages.length) {
-                document.getElementById('dog').src = dogImages[level - 1];
-            }
+            document.getElementById('dog').src = dogImages[level - 1];
         }
-
-        document.getElementById('dog').addEventListener('click', function() {
-            dogClicks++;
-            localStorage.setItem('dogClicks', dogClicks);
-            const tokensToAdd = level; // Количество токенов за клик увеличивается с уровнем
-            tokens += tokensToAdd;
-            localStorage.setItem('tokens', tokens);
-            document.getElementById('tokens').innerText = `Tokens: ${tokens}`; // Обновляем отображение токенов
-            updateProgressBar();
-
-            if (dogClicks >= 10 && !claimedRewards.click) {
-                document.getElementById('clickTask').innerHTML = 'You have completed the task!<br><button class="button claim-button" onclick="claimReward(\'click\')">Claim Reward</button>';
-            }
-        });
 
         function updateProgressBar() {
-            const progress = tokens / progressToNextLevel[level - 1] * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-            if (progress >= 100) {
-                levelUp();
-            }
-        }
-
-        function levelUp() {
-            if (level < progressToNextLevel.length) {
-                level++;
-                localStorage.setItem('level', level);
-                document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
-                tokens += 100; // Награда за повышение уровня
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
-                updateProgressBar();
-                updateDogImage(); // Обновляем изображение собачки при повышении уровня
-            }
+            const progress = (tokens / progressToNextLevel[level - 1]) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
         }
 
         function claimReward(task) {
             if (task === 'click' && !claimedRewards.click) {
-                tokens += 100000; // Награда за выполнение задачи клика
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                tokens += 100000; // 100K Tokens
                 claimedRewards.click = true;
-                localStorage.setItem('claimedClickReward', true);
-                document.getElementById('clickTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
+                localStorage.setItem('claimedClickReward', 'true');
             } else if (task === 'refer' && !claimedRewards.refer) {
-                tokens += 200000; // Награда за задачу реферала
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                tokens += 200000; // 200K Tokens
                 claimedRewards.refer = true;
-                localStorage.setItem('claimedReferReward', true);
-                document.getElementById('referTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
+                localStorage.setItem('claimedReferReward', 'true');
             } else if (task === 'telegram' && !claimedRewards.telegram) {
-                tokens += 1100000; // Награда за задачу Telegram
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                tokens += 1100000; // 1.1M Tokens
                 claimedRewards.telegram = true;
-                localStorage.setItem('claimedTelegramReward', true);
-                document.getElementById('telegramTask').innerHTML = 'Reward claimed!'; // Обновление интерфейса задачи
-            } else {
-                alert('Reward already claimed or task not completed.');
+                localStorage.setItem('claimedTelegramReward', 'true');
             }
-        }
-
-        function switchSection(sectionId) {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            if (sectionId === 'frens') {
-                generateReferralLink();
-            }
+            updateTokensDisplay();
+            updateProgressBar();
+            alert('Reward claimed!');
         }
 
         function generateReferralLink() {
-            const baseLink = window.location.href.split('#')[0];
-            const referralCode = 'USER123'; // Динамическое генерирование кода реферала можно реализовать позже
-            document.getElementById('referralLinkDisplay').innerText = `${baseLink}?ref=${referralCode}`;
+            const baseUrl = window.location.href;
+            const referralLink = `${baseUrl}?referral=${localStorage.getItem('userId')}`;
+            document.getElementById('referralLinkDisplay').innerText = referralLink;
         }
 
         function copyReferralLink() {
-            const link = document.getElementById('referralLinkDisplay').innerText;
-            navigator.clipboard.writeText(link).then(() => {
-                alert('Referral link copied to clipboard!');
-            }, () => {
-                alert('Failed to copy referral link.');
+            const referralLink = document.getElementById('referralLinkDisplay').innerText;
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Referral link copied!');
             });
         }
+
+        function displayTopPlayers() {
+            // Демо данных для отображения топ игроков
+            const demoPlayers = [
+                { name: 'Player1', tokens: 1000000 },
+                { name: 'Player2', tokens: 800000 },
+                { name: 'Player3', tokens: 600000 },
+                { name: 'Player4', tokens: 400000 },
+                { name: 'Player5', tokens: 200000 }
+            ];
+            const topPlayersDiv = document.getElementById('topPlayers');
+            topPlayersDiv.innerHTML = demoPlayers.map(player => `<p>${player.name}: ${player.tokens} Tokens</p>`).join('');
+        }
+
+        document.getElementById('dog').addEventListener('click', () => {
+            dogClicks++;
+            tokens++;
+            localStorage.setItem('dogClicks', dogClicks);
+            localStorage.setItem('tokens', tokens);
+            updateTokensDisplay();
+            updateProgressBar();
+        });
+
+        window.onload = function() {
+            switchSection('main');
+        };
     </script>
 </body>
 </html>
