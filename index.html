@@ -193,7 +193,7 @@
         <div class="progress-bar">
             <div id="progressBar" class="progress-bar-fill"></div>
         </div>
-        <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog">
+        <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog" onclick="addTokens()">
         <div id="tokens">Tokens: 0</div>
         <div id="dailyBonus" class="button" onclick="claimDailyBonus()">Claim Daily Bonus</div>
     </div>
@@ -238,86 +238,79 @@
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = localStorage.getItem('dailyBonusDay') || '';
+        
+        // Уникальный идентификатор пользователя
+        let userId = "12345"; // Замените это значение на уникальный ID для каждого пользователя
 
         document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
         document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-        updateProgressBar();
+        document.getElementById('referralLinkDisplay').innerText = "https://example.com/referral?user=" + userId;
 
-        const clickTask = document.getElementById('clickTask');
-        const referTask = document.getElementById('referTask');
-        const telegramTask = document.getElementById('telegramTask');
-        const clickTaskButton = document.getElementById('clickTaskButton');
-        const referTaskButton = document.getElementById('referTaskButton');
-        const telegramTaskButton = document.getElementById('telegramTaskButton');
-
-        let firstLogin = !dailyBonusDay || new Date().toDateString() !== new Date(dailyBonusDay).toDateString();
-
-        if (firstLogin) {
-            dailyBonusDay = new Date().toDateString();
-            localStorage.setItem('dailyBonusDay', dailyBonusDay);
-            document.getElementById('dog').classList.add('heartbeat');
-            setTimeout(() => {
-                document.getElementById('dog').classList.remove('heartbeat');
-            }, 2000); // Animation duration
-        }
-
-        function switchSection(sectionId) {
+        function switchSection(section) {
             const sections = document.querySelectorAll('.section');
-            sections.forEach(section => section.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+            sections.forEach(s => s.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
         }
 
-        document.getElementById('dog').addEventListener('click', () => {
-            let tokenReward = level;
-            tokens += tokenReward;
-            dogClicks++;
+        function addTokens() {
+            let tokensToAdd = level; // Добавить токены, равные уровню
+            tokens += tokensToAdd;
             localStorage.setItem('tokens', tokens);
-            localStorage.setItem('dogClicks', dogClicks);
             document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
-            document.getElementById('dog').style.animation = 'press 0.3s forwards';
-            updateProgressBar();
-        });
-
-        function updateProgressBar() {
-            let progressBar = document.getElementById('progressBar');
-            let requiredTokens = getRequiredTokens(level);
-            progressBar.style.width = (tokens / requiredTokens * 100) + '%';
-            if (tokens >= requiredTokens) {
-                levelUp();
-            }
-        }
-
-        function getRequiredTokens(level) {
-            const requirements = [0, 1000, 20000, 500000, 5000000, 10000000, 50000000, 100000000, 700000000, 1000000000];
-            return requirements[level];
-        }
-
-        function levelUp() {
-            level++;
-            if (level > 10) level = 10; // Max level cap
-            localStorage.setItem('level', level);
-            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-            updateProgressBar();
-        }
-
-        function getLevelName(level) {
-            const levelNames = ["Novice", "Beginner", "Intermediate", "Advanced", "Expert", "Master", "Grandmaster", "Champion", "Legend", "Mythic", "Divine"];
-            return levelNames[level] || "Unknown";
+            updateProgressBar(); // Обновить прогресс-бар
         }
 
         function claimDailyBonus() {
-            // Daily bonus logic
-            // ...
+            const today = new Date().toLocaleDateString();
+            if (dailyBonusDay !== today) {
+                tokens += getDailyBonusAmount();
+                document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
+                localStorage.setItem('tokens', tokens);
+                localStorage.setItem('dailyBonusDay', today);
+                dailyBonusDay = today;
+                updateProgressBar();
+            } else {
+                alert('You have already claimed your daily bonus today.');
+            }
         }
 
-        function copyReferralLink() {
-            // Referral link copy logic
-            // ...
+        function getDailyBonusAmount() {
+            return 5000; // Amount of tokens for daily bonus
+        }
+
+        function getLevelName(level) {
+            const levelNames = [
+                'Novice', 'Beginner', 'Rookie', 'Pro', 'Champion', 
+                'Legend', 'Master', 'Ultimate', 'Elite', 'Shiba Emperor'
+            ];
+            return levelNames[level - 1] || 'Novice';
+        }
+
+        function updateProgressBar() {
+            const maxTokensForLevel = [1000, 20000, 500000, 5000000, 10000000, 50000000, 100000000, 700000000, 1000000000];
+            const progress = (tokens / maxTokensForLevel[level - 1]) * 100;
+            document.getElementById('progressBar').style.width = Math.min(progress, 100) + '%';
+            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
         }
 
         function claimReward(task) {
-            // Task reward claiming logic
-            // ...
+            // Add your reward logic here
+            alert('Reward claimed for ' + task + ' task!');
+        }
+
+        function copyReferralLink() {
+            const referralLink = "https://example.com/referral?user=" + encodeURIComponent(userId);
+            
+            const tempInput = document.createElement("input");
+            tempInput.value = referralLink;
+            document.body.appendChild(tempInput);
+            
+            tempInput.select();
+            document.execCommand("copy");
+            
+            document.body.removeChild(tempInput);
+            
+            alert('Referral link copied to clipboard: ' + referralLink);
         }
     </script>
 </body>
