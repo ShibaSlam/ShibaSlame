@@ -237,87 +237,53 @@
         };
 
         const progressToNextLevel = [100, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000, 10000000];
-        const levelNames = ["Novice", "Beginner", "Intermediate", "Advanced", "Expert", "Master", "Legend", "Hero", "Myth", "God"];
+        const levelNames = ["Novice", "Apprentice", "Journeyman", "Expert", "Master", "Grandmaster", "Legend", "Champion", "Hero", "Titan"];
 
-        document.getElementById("dog").addEventListener("click", function () {
-            const clickValue = level + 1; // Tokens earned per click based on level
-            tokens += clickValue;
+        document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+        document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+        updateProgressBar();
+
+        document.getElementById('dog').addEventListener('click', function() {
             dogClicks++;
-            localStorage.setItem('tokens', tokens);
+            tokens += level; // Tokens increase by the level
             localStorage.setItem('dogClicks', dogClicks);
-            updateUI();
-            checkLevelUp();
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+            updateProgressBar();
         });
 
-        document.getElementById("dailyBonus").addEventListener("click", function () {
-            const currentDay = new Date().getDate();
-            if (currentDay !== dailyBonusDay) {
-                dailyBonusDay = currentDay;
-                tokens += 500000; // Fixed daily bonus amount
-                localStorage.setItem('tokens', tokens);
+        document.getElementById('dailyBonus').addEventListener('click', function() {
+            const today = new Date().getDate();
+            if (today !== dailyBonusDay) {
+                const dailyBonusTokens = Math.floor(100 * (1.5 ** (dailyBonusDay % 10)));
+                tokens += dailyBonusTokens;
+                dailyBonusDay = today;
                 localStorage.setItem('dailyBonusDay', dailyBonusDay);
-                updateUI();
+                localStorage.setItem('tokens', tokens);
+                document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
+                alert(`You claimed your daily bonus of ${dailyBonusTokens} tokens!`);
             } else {
-                alert("You have already claimed your daily bonus today!");
+                alert("You've already claimed your daily bonus today!");
             }
         });
 
-        function claimReward(task) {
-            if (!claimedRewards[task]) {
-                switch (task) {
-                    case 'click':
-                        tokens += 100000;
-                        claimedRewards.click = true;
-                        localStorage.setItem('claimedClickReward', 'true');
-                        break;
-                    case 'refer':
-                        tokens += 200000;
-                        claimedRewards.refer = true;
-                        localStorage.setItem('claimedReferReward', 'true');
-                        break;
-                    case 'telegram':
-                        tokens += 1100000;
-                        claimedRewards.telegram = true;
-                        localStorage.setItem('claimedTelegramReward', 'true');
-                        break;
-                }
-                localStorage.setItem('tokens', tokens);
-                updateUI();
-            } else {
-                alert("You have already claimed this reward!");
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const nextLevelRequirement = progressToNextLevel[level - 1];
+            progressBar.style.width = `${(tokens / nextLevelRequirement) * 100}%`;
+            if (tokens >= nextLevelRequirement) {
+                levelUp();
             }
         }
 
-        function checkLevelUp() {
-            if (tokens >= progressToNextLevel[level - 1]) {
-                tokens -= progressToNextLevel[level - 1];
+        function levelUp() {
+            if (level < 10) { // Maximum level
                 level++;
-                localStorage.setItem('tokens', tokens);
                 localStorage.setItem('level', level);
-                updateUI();
+                document.getElementById('level').innerText = `Level: ${levelNames[level - 1]}`;
+                alert(`Congratulations! You've leveled up to ${levelNames[level - 1]}!`);
             }
-        }
-
-        function updateUI() {
-            document.getElementById("tokens").innerText = `Tokens: ${tokens}`;
-            document.getElementById("level").innerText = `Level: ${levelNames[level - 1]}`;
-            document.getElementById("progressBar").style.width = `${(tokens / progressToNextLevel[level - 1]) * 100}%`;
-
-            // Update dog image based on level
-            const dogImages = [
-                "https://i.ibb.co/DVdW06b/IMG-4253.png", // Level 1 - Novice
-                "https://i.ibb.co/n3Pdw6y/IMG-4296.png", // Level 2 - Beginner
-                "https://i.ibb.co/M5V8Zsn/IMG-4300.png", // Level 3 - Intermediate
-                "https://i.ibb.co/TTHh7gS/IMG-4299.png", // Level 4 - Advanced
-                "https://i.ibb.co/xmjyfZ4/IMG-4297.png", // Level 5 - Expert
-                "https://i.ibb.co/XXQfK7D/IMG-4294.png", // Level 6 - Master
-                "https://i.ibb.co/DMQpnmv/IMG-4298.png", // Level 7 - Legend
-                "https://i.ibb.co/0QsKRm8/IMG-4293.png", // Level 8 - Hero
-                "https://i.ibb.co/58DNWLX/IMG-4292.png", // Level 9 - Myth
-                "https://i.ibb.co/MZMMCKx/IMG-4523.png"  // Level 10 - God
-            ];
-
-            document.getElementById("dog").src = dogImages[level - 1] || dogImages[0]; // Fallback to novice image
+            updateProgressBar();
         }
 
         function switchSection(sectionId) {
@@ -328,15 +294,35 @@
             document.getElementById(sectionId).classList.add('active');
         }
 
-        function copyReferralLink() {
-            const referralLink = "https://shibaslam.com/referral?user=" + Math.random().toString(36).substring(7);
-            navigator.clipboard.writeText(referralLink).then(() => {
-                alert("Referral link copied to clipboard!");
-            });
+        function claimReward(task) {
+            if (task === 'click' && !claimedRewards.click) {
+                tokens += 100000;
+                claimedRewards.click = true;
+                localStorage.setItem('claimedClickReward', 'true');
+                alert("You've claimed 100K Tokens for completing 10 clicks on the dog!");
+            } else if (task === 'refer' && !claimedRewards.refer) {
+                tokens += 200000;
+                claimedRewards.refer = true;
+                localStorage.setItem('claimedReferReward', 'true');
+                alert("You've claimed 200K Tokens for referring a friend!");
+            } else if (task === 'telegram' && !claimedRewards.telegram) {
+                tokens += 1100000;
+                claimedRewards.telegram = true;
+                localStorage.setItem('claimedTelegramReward', 'true');
+                alert("You've claimed 1.1M Tokens for joining the Telegram channel!");
+            } else {
+                alert("Reward has already been claimed!");
+            }
+            localStorage.setItem('tokens', tokens);
+            document.getElementById('tokens').innerText = `Tokens: ${tokens}`;
         }
 
-        // Initial UI update
-        updateUI();
+        function copyReferralLink() {
+            const referralLink = "http://shibaslam.com/?ref=YOUR_ID";
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Referral link copied to clipboard!');
+            });
+        }
     </script>
 </body>
 </html>
