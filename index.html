@@ -232,23 +232,12 @@
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = localStorage.getItem('dailyBonusDay') || '';
         let taskClaimed = {
-            click: true, // Установим как true, чтобы игрок не мог повторно забирать награду
-            refer: true, // Установим как true, чтобы игрок не мог повторно забирать награду
-            telegram: true // Установим как true, чтобы игрок не мог повторно забирать награду
+            click: false,
+            refer: false,
+            telegram: false
         };
 
-        const tokenRequirements = {
-            1: 0,
-            2: 1000,
-            3: 100000,
-            4: 1000000,
-            5: 5000000,
-            6: 6666666,
-            7: 7000000,
-            8: 100000000,
-            9: 150000000,
-            10: 1000000000,
-        };
+        let userId = "12345"; // Пример ID пользователя для отслеживания подписок
 
         function switchSection(sectionId) {
             const sections = document.querySelectorAll('.section');
@@ -259,118 +248,140 @@
         }
 
         function addTokens() {
-            if (level > 0) {
-                tokens += level;
-                dogClicks++;
-                localStorage.setItem('tokens', tokens);
-                localStorage.setItem('dogClicks', dogClicks);
-                updateTokenDisplay();
-                updateProgressBar();
-                checkClickTask();
-                updateLevel(); // Обновляем уровень после получения токенов
-            }
-        }
-
-        function updateTokenDisplay() {
-            document.getElementById('tokens').innerText = 'Tokens: ' + tokens.toLocaleString();
-        }
-
-        function updateProgressBar() {
-            const progressBar = document.getElementById('progressBar');
-            const progress = (dogClicks / 10) * 100; // 10 кликов для выполнения задания
-            progressBar.style.width = progress + '%';
-            if (dogClicks >= 10) {
-                document.getElementById('clickTaskButton').style.display = 'block';
-            }
+            tokens += level; // Добавляем токены в соответствии с уровнем
+            localStorage.setItem('tokens', tokens);
+            dogClicks++;
+            localStorage.setItem('dogClicks', dogClicks);
+            updateTokensDisplay();
+            updateProgressBar();
+            checkLevelUp();
+            updateTaskVisibility();
+            updateDogImage();
         }
 
         function claimDailyBonus() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toDateString();
             if (dailyBonusDay !== today) {
-                tokens += 500; // Пример бонуса
+                tokens += 100000; // Начисляем 100К токенов за ежедневный бонус
+                localStorage.setItem('tokens', tokens);
                 dailyBonusDay = today;
                 localStorage.setItem('dailyBonusDay', dailyBonusDay);
-                localStorage.setItem('tokens', tokens);
-                updateTokenDisplay();
+                updateTokensDisplay();
+                updateProgressBar();
             } else {
-                alert("You have already claimed your daily bonus today!");
+                alert("You have already claimed your daily bonus today.");
             }
         }
 
-        function checkClickTask() {
-            if (dogClicks >= 10) {
-                document.getElementById('clickTaskButton').style.display = 'block';
+        function checkLevelUp() {
+            const tokenRequirements = [
+                { level: 1, tokens: 0, name: "Novice" },
+                { level: 2, tokens: 1000, name: "Beginner" },
+                { level: 3, tokens: 100000, name: "Intermediate" },
+                { level: 4, tokens: 1000000, name: "Advanced" },
+                { level: 5, tokens: 5000000, name: "Expert" },
+                { level: 6, tokens: 66666666, name: "Master" },
+                { level: 7, tokens: 70000000, name: "Grandmaster" },
+                { level: 8, tokens: 100000000, name: "Champion" },
+                { level: 9, tokens: 150000000, name: "Legend" },
+                { level: 10, tokens: 1000000000, name: "Mythic" }
+            ];
+
+            for (let i = 0; i < tokenRequirements.length; i++) {
+                if (tokens >= tokenRequirements[i].tokens) {
+                    level = tokenRequirements[i].level;
+                    document.getElementById("level").innerText = `Level: ${tokenRequirements[i].name}`;
+                }
             }
+
+            localStorage.setItem('level', level);
+        }
+
+        function updateTokensDisplay() {
+            document.getElementById("tokens").innerText = `Tokens: ${tokens.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById("progressBar");
+            const totalTokens = 1000000000; // Максимальное количество токенов для уровня 10
+            const progressPercentage = (tokens / totalTokens) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
         }
 
         function claimReward(task) {
             if (taskClaimed[task]) {
-                alert("You have already claimed this reward!");
+                alert("You have already claimed this reward.");
                 return;
             }
 
-            let reward;
+            let reward = 0;
+
             switch (task) {
                 case 'click':
-                    reward = 100000; // 100K Tokens
+                    reward = 100000; // 100К токенов
                     break;
                 case 'refer':
-                    reward = 200000; // 200K Tokens
+                    reward = 200000; // 200К токенов
                     break;
                 case 'telegram':
-                    reward = 1100000; // 1.1M Tokens
+                    reward = 1100000; // 1.1M токенов
                     break;
                 default:
-                    reward = 0;
+                    break;
             }
 
             tokens += reward;
-            taskClaimed[task] = true; // Установим в true, чтобы игрок не мог забирать награду повторно
             localStorage.setItem('tokens', tokens);
-            updateTokenDisplay();
-            alert(`You have claimed ${reward.toLocaleString()} tokens!`);
-            document.getElementById(`${task}TaskButton`).style.display = 'none'; // Скрыть кнопку после получения награды
+            taskClaimed[task] = true; // Запоминаем, что награда была получена
+            updateTokensDisplay();
+            updateProgressBar();
+            checkLevelUp();
+            updateTaskVisibility();
+        }
 
-            // Показать кнопку награды для задания в Telegram
-            if (task === 'telegram') {
-                document.getElementById('telegramTaskButton').style.display = 'block';
-            }
+        function updateTaskVisibility() {
+            document.getElementById("clickTaskButton").style.display = tokens >= 100000 && !taskClaimed.click ? 'inline-block' : 'none';
+            document.getElementById("referTaskButton").style.display = tokens >= 200000 && !taskClaimed.refer ? 'inline-block' : 'none';
+            document.getElementById("telegramTaskButton").style.display = tokens >= 1100000 && !taskClaimed.telegram ? 'inline-block' : 'none';
         }
 
         function subscribeToTelegram() {
-            alert("Subscribed to Telegram! Check for updates.");
-            // Здесь может быть код для интеграции с Telegram API
+            // Здесь будет логика подписки на Telegram
+            alert("You have subscribed to the Telegram channel!");
+            document.getElementById("telegramTaskButton").style.display = 'inline-block';
         }
 
         function copyReferralLink() {
-            const referralLink = `https://shibaslam.com/?ref=${userId}`;
+            const referralLink = `https://yourgame.com/referral/${userId}`;
             navigator.clipboard.writeText(referralLink).then(() => {
                 alert("Referral link copied to clipboard!");
             });
         }
 
-        function updateLevel() {
-            // Проверяем, чтобы уровень соответствовал количеству токенов
-            for (let i = 10; i > 0; i--) {
-                if (tokens >= tokenRequirements[i]) {
-                    level = i;
-                    break;
-                }
-            }
-            localStorage.setItem('level', level);
-            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-            updateProgressBar(); // Обновите прогресс бар при повышении уровня
+        function updateDogImage() {
+            const dogImage = [
+                "https://i.ibb.co/DVdW06b/IMG-4253.png", // Level 1
+                "https://i.ibb.co/n3Pdw6y/IMG-4296.png", // Level 2
+                "https://i.ibb.co/M5V8Zsn/IMG-4300.png", // Level 3
+                "https://i.ibb.co/TTHh7gS/IMG-4299.png", // Level 4
+                "https://i.ibb.co/xmjyfZ4/IMG-4297.png", // Level 5
+                "https://i.ibb.co/XXQfK7D/IMG-4294.png", // Level 6
+                "https://i.ibb.co/DMQpnmv/IMG-4298.png", // Level 7
+                "https://i.ibb.co/0QsKRm8/IMG-4293.png", // Level 8
+                "https://i.ibb.co/58DNWLX/IMG-4292.png", // Level 9
+                "https://i.ibb.co/MZMMCKx/IMG-4523.png"  // Level 10
+            ];
+
+            document.getElementById("dog").src = dogImage[level - 1]; // Обновляем изображение собаки в зависимости от уровня
         }
 
-        function getLevelName(level) {
-            const levelNames = ["Novice", "Intermediate", "Advanced", "Expert", "Master", "Grandmaster", "Legend", "Mythic", "Divine", "Godlike"];
-            return levelNames[level - 1] || "Godlike";
-        }
-
-        // Начальная установка
-        updateTokenDisplay();
-        document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-        updateLevel(); // Обновите уровень при запуске игры
+        window.onload = function() {
+            updateTokensDisplay();
+            updateProgressBar();
+            checkLevelUp();
+            updateTaskVisibility();
+            updateDogImage(); // Отображаем начальное изображение собаки
+        };
     </script>
 </body>
 </html>
