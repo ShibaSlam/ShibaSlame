@@ -231,7 +231,7 @@
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = localStorage.getItem('dailyBonusDay') || '';
-        let taskClaimed = {
+        let taskClaimed = JSON.parse(localStorage.getItem('taskClaimed')) || {
             click: false,
             refer: false,
             telegram: false
@@ -332,7 +332,11 @@
 
             tokens += reward;
             localStorage.setItem('tokens', tokens);
-            taskClaimed[task] = true; // Запоминаем, что награда была получена
+
+            // Запоминаем, что награда была получена, и сохраняем это в localStorage
+            taskClaimed[task] = true;
+            localStorage.setItem('taskClaimed', JSON.stringify(taskClaimed));
+
             updateTokensDisplay();
             updateProgressBar();
             checkLevelUp();
