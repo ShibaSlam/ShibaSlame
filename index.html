@@ -115,7 +115,7 @@
         }
 
         .subscribe-button {
-            animation: heartbeat 1.5s infinite; /* Анимация сердцебиения */
+            animation: heartbeat 1.5s infinite;
             background: linear-gradient(45deg, #FF5722, #FF8A65);
         }
 
@@ -186,7 +186,7 @@
             <div id="progressBar" class="progress-bar-fill"></div>
         </div>
         <img id="dog" src="https://i.ibb.co/DVdW06b/IMG-4253.png" alt="Shiba Dog" onclick="addTokens()">
-        <div id="tokens">Tokens: 0</div>
+        <div id="tokens">Tokens: 1</div>
         <div id="dailyBonus" class="button" onclick="claimDailyBonus()">Claim Daily Bonus</div>
     </div>
 
@@ -227,7 +227,7 @@
     </div>
 
     <script>
-        let tokens = parseInt(localStorage.getItem('tokens')) || 0;
+        let tokens = parseInt(localStorage.getItem('tokens')) || 1; // Начинаем с 1 токена
         let dogClicks = parseInt(localStorage.getItem('dogClicks')) || 0;
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = localStorage.getItem('dailyBonusDay') || '';
@@ -237,7 +237,7 @@
             telegram: false
         };
 
-        let userId = "12345"; // Example user ID for tracking subscriptions
+        let userId = "12345"; // Пример ID пользователя для отслеживания подписок
 
         function switchSection(sectionId) {
             const sections = document.querySelectorAll('.section');
@@ -247,141 +247,116 @@
             document.getElementById(sectionId).classList.add('active');
         }
 
-        function addTokens() {
-            const levelReward = level; // Reward increases by level
-            tokens += levelReward; // Change this to the desired increment
-            dogClicks++;
-            localStorage.setItem('dogClicks', dogClicks);
+        function
+
+ updateTokensDisplay() {
             document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
+        }
 
-            // Update progress bar based on dogClicks
+        function updateLevelDisplay() {
+            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
             updateProgressBar();
+        }
 
-            // Check if task completed (10 clicks)
-            if (dogClicks >= 10 && !taskClaimed.click) {
-                taskClaimed.click = true; // Mark task as completed
-                alert('Task completed! You can claim your reward of 100K Tokens!');
+        function getLevelName(level) {
+            const levelNames = ['Novice', 'Intermediate', 'Advanced', 'Expert', 'Master', 'Grandmaster', 'Champion', 'Legend', 'Mythic', 'Godlike'];
+            return levelNames[level - 1] || levelNames[levelNames.length - 1];
+        }
+
+        function updateProgressBar() {
+            const nextLevelTokens = getNextLevelTokens();
+            const progressBar = document.getElementById('progressBar');
+            const progressPercentage = Math.min((tokens / nextLevelTokens) * 100, 100);
+            progressBar.style.width = progressPercentage + '%';
+            if (progressPercentage >= 100) {
+                levelUp();
             }
         }
 
+        function getNextLevelTokens() {
+            const levelTokens = [
+                0,
+                1000,
+                100000,
+                1000000,
+                5000000,
+                6666666,
+                7000000,
+                100000000,
+                150000000,
+                1000000000
+            ];
+            return levelTokens[level] || levelTokens[levelTokens.length - 1];
+        }
+
+        function addTokens() {
+            tokens += level; // Получаем токены, равные текущему уровню
+            dogClicks++;
+            localStorage.setItem('tokens', tokens);
+            localStorage.setItem('dogClicks', dogClicks);
+            updateTokensDisplay();
+            updateLevelDisplay();
+        }
+
         function claimDailyBonus() {
-            const today = new Date().toISOString().slice(0, 10);
+            const today = new Date().toLocaleDateString();
             if (dailyBonusDay !== today) {
-                dailyBonusDay = today;
-                let bonus = 100000; // Set a daily bonus
+                const bonus = 100; // Пример бонуса
                 tokens += bonus;
+                dailyBonusDay = today;
+                localStorage.setItem('dailyBonusDay', dailyBonusDay);
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
-                alert('You claimed your daily bonus of ' + bonus + ' tokens!');
-                localStorage.setItem('dailyBonusDay', today);
+                updateTokensDisplay();
             } else {
                 alert('You have already claimed your daily bonus today!');
             }
         }
 
-        function updateProgressBar() {
-            const maxClicks = 10; // Max clicks to complete task
-            const clicksNeeded = maxClicks - dogClicks; // Remaining clicks to complete task
-            const progress = ((maxClicks - clicksNeeded) / maxClicks) * 100; 
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progressBar').innerText = `${clicksNeeded} clicks remaining to level up!`;
-        }
-
-        function updateDogImage() {
-            const dog = document.getElementById('dog');
-            if (level === 1) {
-                dog.src = "https://i.ibb.co/DVdW06b/IMG-4253.png"; // Old image
-            } else if (level === 2) {
-                dog.src = "https://i.ibb.co/n3Pdw6y/IMG-4296.png"; 
-            } else if (level === 3) {
-                dog.src = "https://i.ibb.co/M5V8Zsn/IMG-4300.png"; 
-            } else if (level === 4) {
-                dog.src = "https://i.ibb.co/TTHh7gS/IMG-4299.png"; 
-            } else if (level === 5) {
-                dog.src = "https://i.ibb.co/xmjyfZ4/IMG-4297.png"; 
-            } else if (level === 6) {
-                dog.src = "https://i.ibb.co/XXQfK7D/IMG-4294.png"; 
-            } else if (level === 7) {
-                dog.src = "https://i.ibb.co/DMQpnmv/IMG-4298.png"; 
-            } else if (level === 8) {
-                dog.src = "https://i.ibb.co/0QsKRm8/IMG-4293.png"; 
-            } else if (level === 9) {
-                dog.src = "https://i.ibb.co/58DNWLX/IMG-4292.png"; 
-            } else if (level === 10) {
-                dog.src = "https://i.ibb.co/MZMMCKx/IMG-4523.png"; 
-            }
-            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-        }
-
-        function getLevelName(level) {
-            switch(level) {
-                case 1: return 'Novice';
-                case 2: return 'Intermediate';
-                case 3: return 'Advanced';
-                case 4: return 'Expert';
-                case 5: return 'Master';
-                case 6: return 'Champion';
-                case 7: return 'Legend';
-                case 8: return 'Mythic';
-                case 9: return 'Grandmaster';
-                case 10: return 'Immortal';
-                default: return 'Unknown';
-            }
-        }
-
         function claimReward(task) {
-            if (task === 'click' && taskClaimed.click) {
-                tokens += 100000; // Reward for click task
-                alert('You claimed your reward of 100K Tokens!');
+            const rewards = {
+                click: 100000,
+                refer: 200000,
+                telegram: 1100000
+            };
+            if (!taskClaimed[task]) {
+                tokens += rewards[task];
+                taskClaimed[task] = true;
                 localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
-                document.getElementById('clickTaskButton').disabled = true; // Disable button
-            } else if (task === 'refer' && !taskClaimed.refer) {
-                tokens += 200000; // Reward for referral task
-                alert('You claimed your reward of 200K Tokens!');
-                taskClaimed.refer = true; // Mark as claimed
-                document.getElementById('referTaskButton').disabled = true; // Disable button
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
-            } else if (task === 'telegram' && taskClaimed.telegram) {
-                tokens += 1100000; // Reward for telegram task
-                alert('You claimed your reward of 1.1M Tokens!');
-                taskClaimed.telegram = true; // Mark as claimed
-                document.getElementById('telegramTaskButton').disabled = true; // Disable button
-                localStorage.setItem('tokens', tokens);
-                document.getElementById('tokens').innerText = 'Tokens: ' + tokens;
+                updateTokensDisplay();
+                alert('Reward claimed! You received ' + rewards[task] + ' tokens.');
+                if (task === 'telegram') {
+                    document.getElementById('telegramTaskButton').style.display = 'none';
+                }
             } else {
                 alert('You have already claimed this reward!');
             }
+            updateLevelDisplay();
         }
 
         function subscribeToTelegram() {
-            const telegramLink = "https://t.me/ShibaSlam";
-            window.open(telegramLink, "_blank"); // Open Telegram link in a new tab
-
-            // Change button text to "Claim" after subscribing
-            const subscribeButton = document.getElementById('subscribeButton');
-            subscribeButton.innerText = 'Claim';
-            subscribeButton.classList.remove('subscribe-button'); // Remove heartbeat animation
-            subscribeButton.classList.add('claim-button'); // Change to claim style
-            subscribeButton.onclick = function() {
-                if (!taskClaimed.telegram) {
-                    claimReward('telegram');
-                } else {
-                    alert('You have already claimed this reward!');
-                }
-            };
+            // Здесь код для подписки на Telegram (например, API вызов)
+            alert('You have subscribed to the Telegram channel!');
+            document.getElementById('telegramTaskButton').style.display = 'inline';
         }
 
         function copyReferralLink() {
-            const referralLink = document.getElementById('referralLinkDisplay').innerText;
+            const referralLink = 'https://shibaslam.com/?ref=' + userId;
             navigator.clipboard.writeText(referralLink).then(() => {
                 alert('Referral link copied to clipboard!');
             });
         }
 
-        updateDogImage();
-        updateProgressBar();
+        function levelUp() {
+            if (level < 10) {
+                level++;
+                localStorage.setItem('level', level);
+                updateLevelDisplay();
+            }
+        }
+
+        // Инициализация интерфейса
+        updateTokensDisplay();
+        updateLevelDisplay();
     </script>
 </body>
 </html>
