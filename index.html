@@ -232,9 +232,9 @@
         let level = parseInt(localStorage.getItem('level')) || 1;
         let dailyBonusDay = localStorage.getItem('dailyBonusDay') || '';
         let taskClaimed = {
-            click: false,
-            refer: false,
-            telegram: false
+            click: true, // Установим как true, чтобы игрок не мог повторно забирать награду
+            refer: true, // Установим как true, чтобы игрок не мог повторно забирать награду
+            telegram: true // Установим как true, чтобы игрок не мог повторно забирать награду
         };
 
         const tokenRequirements = {
@@ -325,7 +325,7 @@
             }
 
             tokens += reward;
-            taskClaimed[task] = true;
+            taskClaimed[task] = true; // Установим в true, чтобы игрок не мог забирать награду повторно
             localStorage.setItem('tokens', tokens);
             updateTokenDisplay();
             alert(`You have claimed ${reward.toLocaleString()} tokens!`);
@@ -350,13 +350,16 @@
         }
 
         function updateLevel() {
-            // Обновите логику повышения уровня здесь
-            while (level < 10 && tokens >= tokenRequirements[level + 1]) {
-                level++;
-                localStorage.setItem('level', level);
-                document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
-                updateProgressBar(); // Обновите прогресс бар при повышении уровня
+            // Проверяем, чтобы уровень соответствовал количеству токенов
+            for (let i = 10; i > 0; i--) {
+                if (tokens >= tokenRequirements[i]) {
+                    level = i;
+                    break;
+                }
             }
+            localStorage.setItem('level', level);
+            document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
+            updateProgressBar(); // Обновите прогресс бар при повышении уровня
         }
 
         function getLevelName(level) {
@@ -364,8 +367,10 @@
             return levelNames[level - 1] || "Godlike";
         }
 
+        // Начальная установка
         updateTokenDisplay();
         document.getElementById('level').innerText = 'Level: ' + getLevelName(level);
+        updateLevel(); // Обновите уровень при запуске игры
     </script>
 </body>
 </html>
